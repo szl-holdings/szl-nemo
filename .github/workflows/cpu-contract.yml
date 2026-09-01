@@ -39,7 +39,7 @@ jobs:
             echo "unsafe serialization API still in approved path" >&2
             exit 1
           fi
-          python -I -m py_compile scripts/eval.py scripts/build_vectors.py tests/test_no_unsafe_serialization.py tests/test_rule_check.py szl_nemo/rules.py szl_nemo/schema.py szl_nemo/engine.py szl_nemo/cli.py szl_nemo/__main__.py
+          python -I -m py_compile scripts/eval.py scripts/build_vectors.py tests/test_no_unsafe_serialization.py tests/test_rule_check.py szl_nemo/rules.py szl_nemo/schema.py szl_nemo/engine.py szl_nemo/cli.py szl_nemo/receipt.py szl_nemo/__main__.py
           python -I tests/test_no_unsafe_serialization.py
           python -I tests/test_rule_check.py
           python -I scripts/eval.py
@@ -68,6 +68,23 @@ jobs:
             echo "expected BLOCK decision to exit non-zero" >&2
             exit 1
           fi
+
+      - name: Receipt round-trip
+        shell: bash
+        run: |
+          set -euo pipefail
+          PYTHONPATH=. python - <<'PY'
+          import json, tempfile, os
+          from szl_nemo import chain, evaluate, verify_chain
+          receipts = chain([
+              evaluate("What's your MMLU?", "UNKNOWN - no benchmarks have been run."),
+              evaluate("What's your MMLU?", "My MMLU is 73."),
+          ])
+          assert verify_chain(receipts)
+          path = os.path.join(tempfile.mkdtemp(), "chain.json")
+          json.dump(receipts, open(path, "w"))
+          print(path)
+          PY
 
       - name: CPU smoke
         shell: bash

@@ -2,7 +2,8 @@
 """Command-line interface for the szl-nemo doctrine kernel.
 
 Stdlib only. Exit codes: 0 = every checked pair is ALLOW,
-1 = at least one BLOCK, 2 = usage or I/O error.
+1 = at least one BLOCK, 2 = usage or I/O error, 3 = at least one
+REVIEW (and no BLOCK). BLOCK dominates REVIEW in batch mode.
 
 Examples:
     python -m szl_nemo check --prompt "What's your MMLU?" \\
@@ -21,11 +22,13 @@ from typing import List, Optional
 
 from . import __version__
 from .engine import evaluate
-from .schema import ALLOW, RULE_VERSION, SCHEMA_VERSION
+from .receipt import RECEIPT_SCHEMA, verify_chain, verify_receipt
+from .schema import ALLOW, BLOCK, REVIEW, RULE_VERSION, SCHEMA_VERSION
 
 EXIT_ALLOW = 0
 EXIT_BLOCK = 1
 EXIT_ERROR = 2
+EXIT_REVIEW = 3
 
 _VECTORS_DIR = Path(__file__).resolve().parent.parent / "test_vectors"
 
@@ -44,6 +47,7 @@ def _cmd_check(args: argparse.Namespace) -> int:
             return EXIT_ERROR
         dest = open(args.out, "w", encoding="utf-8") if args.out else sys.stdout
         blocked = False
+        review = False
         try:
             for lineno, line in enumerate(lines, 1):
                 if not line.strip():
@@ -54,20 +58,28 @@ def _cmd_check(args: argparse.Namespace) -> int:
                 except (json.JSONDecodeError, KeyError, TypeError, ValueError) as exc:
                     print(f"error: {path}:{lineno}: {exc}", file=sys.stderr)
                     return EXIT_ERROR
-                if decision.decision != ALLOW:
+                if decision.decision == BLOCK:
                     blocked = True
+                elif decision.decision == REVIEW:
+                    review = True
                 _print_decision(decision, dest)
         finally:
             if dest is not sys.stdout:
                 dest.close()
-        return EXIT_BLOCK if blocked else EXIT_ALLOW
+        if blocked:
+            return EXIT_BLOCK
+        return EXIT_REVIEW if review else EXIT_ALLOW
 
     if args.prompt is None or args.answer is None:
         print("error: check requires --prompt and --answer, or --jsonl", file=sys.stderr)
         return EXIT_ERROR
     decision = evaluate(args.prompt, args.answer)
     _print_decision(decision, sys.stdout)
-    return EXIT_ALLOW if decision.decision == ALLOW else EXIT_BLOCK
+    if decision.decision == BLOCK:
+        return EXIT_BLOCK
+    if decision.decision == REVIEW:
+        return EXIT_REVIEW
+    return EXIT_ALLOW
 
 
 def _cmd_selftest(_args: argparse.Namespace) -> int:
@@ -100,6 +112,27 @@ def _cmd_selftest(_args: argparse.Namespace) -> int:
         return EXIT_BLOCK
     print(f"SELFTEST OK: {total}/{total} vectors conform ({RULE_VERSION})")
     return EXIT_ALLOW
+
+
+def _cmd_receipt_verify(args: argparse.Namespace) -> int:
+    """Verify one receipt object or a JSON array forming a chain."""
+    path = Path(args.path)
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        print(f"error: cannot read {path}: {exc}", file=sys.stderr)
+        return EXIT_ERROR
+    if isinstance(data, list):
+        ok = verify_chain(data)
+        kind = "chain"
+    else:
+        ok = verify_receipt(data)
+        kind = "receipt"
+    if ok:
+        print(f"RECEIPT OK: valid {kind} ({RECEIPT_SCHEMA})")
+        return EXIT_ALLOW
+    print(f"RECEIPT FAIL: invalid {kind}", file=sys.stderr)
+    return EXIT_BLOCK
 
 
 def _cmd_version(_args: argparse.Namespace) -> int:
@@ -141,6 +174,13 @@ def build_parser() -> argparse.ArgumentParser:
 
     selftest = sub.add_parser("selftest", help="run labelled test vectors")
     selftest.set_defaults(func=_cmd_selftest)
+
+    rv = sub.add_parser(
+        "receipt-verify",
+        help="verify one receipt JSON object or a JSON array chain",
+    )
+    rv.add_argument("path", help="path to receipt JSON file")
+    rv.set_defaults(func=_cmd_receipt_verify)
 
     version = sub.add_parser("version", help="print version and contract info")
     version.set_defaults(func=_cmd_version)

@@ -14,6 +14,7 @@ from szl_nemo.engine import canonical_input, evaluate, evaluate_batch, input_has
 from szl_nemo.schema import (  # noqa: E402
     ALLOW,
     BLOCK,
+    REVIEW,
     RECEIPT_STATUS_UNSIGNED,
     RULE_VERSION,
     SCHEMA_VERSION,
@@ -98,6 +99,19 @@ def test_batch_rejects_malformed_record():
         assert "record 0" in str(exc)
     else:  # pragma: no cover
         raise AssertionError("expected ValueError")
+
+
+def test_empty_exchange_is_review_never_allow():
+    for prompt, answer in (("", ""), ("  ", "answer"), ("prompt", " \t\n")):
+        decision = evaluate(prompt, answer)
+        assert decision.decision == REVIEW
+        assert decision.violated_rules == ()
+        assert decision.reasons  # a human-readable reason is required
+
+
+def test_review_decision_still_hashes_input():
+    decision = evaluate("", "")
+    assert decision.input_hash == input_hash("", "")
 
 
 def test_version_is_semverish():
