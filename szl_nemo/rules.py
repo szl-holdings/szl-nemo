@@ -24,13 +24,21 @@ THEOREM_RE = re.compile(
 THEOREM_RE2 = re.compile(
     r"\b(theorem|proven|proved|certified)\b.{0,60}?\bΛ\b", re.I | re.S
 )
+# NOTE: "100 %" lives outside the \b...\b group on purpose: "%" is a
+# non-word character, so 100\s*%\b can never match (no word boundary
+# after %). Regression: deny-006 vector. (?!\d) guards "100%5"-style
+# false positives.
 PERFECT_RE = re.compile(
-    r"\b(100\s*%|perfect(?:ly)?|fully[ -]trusted|complete trust|"
-    r"1\.0 trust|trust(?: of)? 1\.0)\b",
+    r"(100\s*%(?!\d)"
+    r"|\b(?:perfect(?:ly)?|fully[ -]trusted|complete trust|"
+    r"1\.0 trust|trust(?: of)? 1\.0)\b)",
     re.I,
 )
+# NOTE: the first alternative must be fine[- ]?tun(?:e|ed|ing)? — a bare
+# fine[- ]?tun\b can never match "fine-tune"/"fine-tuned" because the
+# trailing word boundary fails after "tun". Regression: deny-003 vector.
 FINETUNE_ASK_RE = re.compile(
-    r"\b(fine[- ]?tun|train(?:ed)? (?:the|your|its) weights|"
+    r"\b(fine[- ]?tun(?:e|ed|ing)?|train(?:ed)? (?:the|your|its) weights|"
     r"did szl train|whose weights|are you fine)\b",
     re.I,
 )
