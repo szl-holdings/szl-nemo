@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "szl-nemo"
-version = "0.2.0"
+version = "0.3.0"
 description = "SOFTWARE/SURROGATE: doctrine rule_check for recipe conformance. Not Nemotron, not an LLM, not a Kernel Hub CUDA kernel."
 readme = "README.md"
 license = { text = "Apache-2.0" }

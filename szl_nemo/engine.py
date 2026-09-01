@@ -12,7 +12,12 @@ import json
 from typing import List
 
 from .rules import RULE_IDS, rule_check
-from .schema import ALLOW, BLOCK, RULE_VERSION, Decision
+from .schema import ALLOW, BLOCK, REVIEW, RULE_VERSION, Decision
+
+REVIEW_REASON = (
+    "empty prompt or answer carries no doctrine signal; review manually "
+    "instead of allowing by default"
+)
 
 _RULE_REASONS = {
     "R1_no_fabrication_label": (
@@ -55,11 +60,21 @@ def input_hash(prompt: str, answer: str) -> str:
 def evaluate(prompt: str, answer: str) -> Decision:
     """Run ground-truth rule_check and return a typed Decision.
 
+    REVIEW -> prompt or answer is empty/blank: no doctrine signal, fail
+              closed to a human instead of silently allowing
     ALLOW  -> no doctrine rules violated
     BLOCK  -> one or more rules violated (fail closed)
     """
     if not isinstance(prompt, str) or not isinstance(answer, str):
         raise TypeError("prompt and answer must be str")
+    if not prompt.strip() or not answer.strip():
+        return Decision(
+            decision=REVIEW,
+            violated_rules=(),
+            rule_version=RULE_VERSION,
+            input_hash=input_hash(prompt, answer),
+            reasons=(REVIEW_REASON,),
+        )
     ok, violated = rule_check(prompt, answer)
     unknown = [rule for rule in violated if rule not in RULE_IDS]
     if unknown:  # pragma: no cover - defensive: rule_check is the source

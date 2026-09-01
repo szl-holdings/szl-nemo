@@ -21,10 +21,12 @@ RECEIPT_STATUS_UNSIGNED = "UNSIGNED_HONEST"
 
 ALLOW = "ALLOW"
 BLOCK = "BLOCK"
-# There is deliberately no REVIEW tier: rule_check is binary and the
-# kernel fails closed. Mapping ambiguous cases to a third tier would
-# claim a capability the checker does not have.
-DECISIONS = (ALLOW, BLOCK)
+# REVIEW is exactly one case: an empty/blank prompt or answer carries no
+# doctrine signal, so the kernel refuses to silently ALLOW it. Anything
+# with real content gets the binary rule_check verdict. (Tier semantics
+# reconciled from PR #2.)
+REVIEW = "REVIEW"
+DECISIONS = (ALLOW, BLOCK, REVIEW)
 
 
 @dataclass(frozen=True)

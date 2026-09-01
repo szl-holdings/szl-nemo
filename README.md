@@ -38,7 +38,7 @@ Approved GitHub path: `szl_nemo.rule_check` + `szl_nemo.evaluate` (stdlib, R1–
 ```json
 {
   "schema_version": "szl.nemo.decision.v1",
-  "decision": "ALLOW | BLOCK",
+  "decision": "ALLOW | BLOCK | REVIEW",
   "violated_rules": ["R1_no_fabrication_label"],
   "reasons": ["human-readable reason per violated rule"],
   "rule_version": "doctrine-v11/R1-R5",
@@ -47,10 +47,24 @@ Approved GitHub path: `szl_nemo.rule_check` + `szl_nemo.evaluate` (stdlib, R1–
 }
 ```
 
-There is no `REVIEW` tier: `rule_check` is binary and the kernel fails closed.
-`receipt_status` is always `UNSIGNED_HONEST` — this repository holds no
-signing key, and an unsigned receipt must say so. Signing belongs to the
-Evidence Plane (`szl-guardrail-receipt`), not to the kernel.
+`REVIEW` is exactly one case: an empty/blank prompt or answer carries no
+doctrine signal, and the kernel refuses to silently allow it. Every input
+with real content gets the binary `rule_check` verdict — there is no
+fuzzy middle tier, because that would claim a capability the checker does
+not have. `receipt_status` is always `UNSIGNED_HONEST` — this repository
+holds no signing key, and an unsigned receipt must say so. Signing belongs
+to the Evidence Plane (`szl-guardrail-receipt`), not to the kernel.
+
+## Receipts
+
+`szl_nemo.receipt` binds decisions into a hash-chained receipt ledger
+(`szl.nemo.receipt.v1`): every receipt carries its own `receipt_sha256`,
+a `sequence`, and `prev_receipt_sha256` (genesis = 64 zeroes). Deterministic
+— no clocks, no RNG — so the same decision sequence always yields the same
+bytes. `verify_receipt()` / `verify_chain()` recompute and check without
+ever raising; `szl-nemo receipt-verify file.json` does it from the shell.
+Integrity and ordering are checkable by anyone; identity is not claimed
+(unsigned, honestly).
 
 ## Usage
 
@@ -67,8 +81,12 @@ szl-nemo check --prompt "What's your MMLU?" --answer "My MMLU is 73."
 
 szl-nemo check --jsonl pairs.jsonl --out decisions.jsonl   # batch mode
 szl-nemo selftest                                          # labelled vectors
+szl-nemo receipt-verify chain.json                         # receipt ledger
 szl-nemo version
 ```
+
+Exit codes: `0` ALLOW, `1` BLOCK, `2` usage/IO error, `3` REVIEW (BLOCK
+dominates in batch mode).
 
 Library use:
 
@@ -83,7 +101,7 @@ assert decision.input_hash.startswith("sha256:")
 
 | Thing | Label | Method / N / date / what-NOT |
 |---|---|---|
-| Doctrine kernel (`rule_check` R1–R5 + engine + CLI) | **MEASURED — operational** | `pytest` suite + 20 labelled vectors + `szl-nemo selftest`, CI on every push/PR. doctrine-v11.1 fixes two word-boundary bugs (R3 gate never fired on "fine-tune"; R5 never fired on "100%"); regression vectors `deny-003`/`deny-006` pin both. What-NOT: regex ground truth is deliberately conservative — it can false-BLOCK negated phrasing (see `test_vectors/README.md`). |
+| Doctrine kernel (`rule_check` R1–R5 + engine + CLI + receipts) | **MEASURED — operational** | `pytest` suite + 20 labelled vectors + `szl-nemo selftest` + hash-chained receipt verification, CI on every push/PR. doctrine-v11.1 fixes two word-boundary bugs (R3 gate never fired on "fine-tune"; R5 never fired on "100%"); regression vectors `deny-003`/`deny-006` pin both. What-NOT: regex ground truth is deliberately conservative — it can false-BLOCK negated phrasing (see `test_vectors/README.md`); receipts prove integrity and ordering, not identity (unsigned). |
 | `model.joblib` on Hub | **UNAVAILABLE** | Hub file list 2026-08-28 ~6:56pm ET. Files on main: `.gitattributes`, `BASE_MODEL_MANIFEST.json`, `LICENSE`, `Modelfile`, `README.md`, `SZL_ESTATE_MANAGED.json`, `TRAINING_RECEIPT.json`, `scripts/eval.py`, `scripts/forge.py`. **No `model.joblib`.** Receipt names file `model.joblib` sha256 `d3f0cd7bebbb73fedbc9a0f098148f46f5834bf9184b43cd29b07f286a77ff5b` — that blob is **not published here**. Do not invent it. |
 | Receipt-bound scorer metrics | **REPORTED in `TRAINING_RECEIPT.json`** | `trained_at_utc` 2026-07-21T02:52:42Z, host replit 2-vCPU, sklearn 1.9.0, seed 20260721. N=5620 checker-labelled rows (2638 conform / 2982 violation), 80/20 stratified. `fidelity_vs_rule_checker` **1.0**; unseen paraphrases **0.8333** (N=**12**). Generator script now quarantined at `quarantine/forge_surrogate.py`. What-NOT: not LLM quality; not a Nemotron benchmark; **cannot be replayed from Hub bytes until `model.joblib` is present**. |
 | Nemotron / generative evals | **UNAVAILABLE** | None on this card. Quality of any Nemotron run on SZL hardware: **UNAVAILABLE**. |

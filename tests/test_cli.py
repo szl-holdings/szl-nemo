@@ -46,6 +46,13 @@ def test_check_block_exit_1():
     assert "R1_no_fabrication_label" in decision["violated_rules"]
 
 
+def test_check_review_exit_3():
+    proc = _run("check", "--prompt", "", "--answer", "")
+    assert proc.returncode == 3
+    decision = json.loads(proc.stdout)
+    assert decision["decision"] == "REVIEW"
+
+
 def test_check_usage_error_exit_2():
     proc = _run("check")
     assert proc.returncode == 2
