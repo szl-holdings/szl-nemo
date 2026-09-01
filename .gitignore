@@ -8,3 +8,7 @@ model.joblib
 *.pkl
 *.pickle
 .DS_Store
+
+# packaging build artifacts
+*.egg-info/
+__pycache__/

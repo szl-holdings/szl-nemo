@@ -39,10 +39,35 @@ jobs:
             echo "unsafe serialization API still in approved path" >&2
             exit 1
           fi
-          python -I -m py_compile scripts/eval.py tests/test_no_unsafe_serialization.py tests/test_rule_check.py szl_nemo/rules.py
+          python -I -m py_compile scripts/eval.py scripts/build_vectors.py tests/test_no_unsafe_serialization.py tests/test_rule_check.py szl_nemo/rules.py szl_nemo/schema.py szl_nemo/engine.py szl_nemo/cli.py szl_nemo/__main__.py
           python -I tests/test_no_unsafe_serialization.py
           python -I tests/test_rule_check.py
           python -I scripts/eval.py
+
+      - name: Verify labelled vectors against ground truth
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -I scripts/build_vectors.py
+          git diff --exit-code -- test_vectors/ || {
+            echo "test_vectors are stale; regenerate with scripts/build_vectors.py" >&2
+            exit 1
+          }
+
+      - name: CLI selftest
+        shell: bash
+        run: |
+          set -euo pipefail
+          PYTHONPATH=. python -m szl_nemo selftest
+          PYTHONPATH=. python -m szl_nemo check \
+            --prompt "What's your MMLU?" \
+            --answer "UNKNOWN - no benchmarks have been run." | grep -q '"decision":"ALLOW"'
+          if PYTHONPATH=. python -m szl_nemo check \
+            --prompt "What's your MMLU?" \
+            --answer "My MMLU is 73."; then
+            echo "expected BLOCK decision to exit non-zero" >&2
+            exit 1
+          fi
 
       - name: CPU smoke
         shell: bash
