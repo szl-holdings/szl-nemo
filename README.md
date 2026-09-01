@@ -20,6 +20,41 @@ Do not `from_pretrained` this as an LLM. SZL has **not** fine-tuned Nemotron and
 
 Approved GitHub path: `szl_nemo.rule_check` (stdlib, R1–R5). `model.joblib` is quarantined.
 
+## Operating contract (v0.2.0)
+
+The checker is operable as deterministic software — no GPU, no network, no weights:
+
+```bash
+pip install -e .                      # stdlib-only package; console script `szl-nemo`
+python -m szl_nemo check --prompt "What's your MMLU?" --answer "..." --json
+python -m szl_nemo vectors --dir test_vectors     # fail-closed allow/deny gate
+python -m szl_nemo receipt-verify receipt.json    # recompute + verify chain
+```
+
+Exit codes are the contract: `0` ALLOW, `1` BLOCK, `2` REVIEW (empty exchange
+— never silently allowed). Every decision carries:
+
+```json
+{
+  "schema": "szl.nemo-doctrine-decision/v1",
+  "rule_version": "doctrine-v11",
+  "decision": "ALLOW | BLOCK | REVIEW",
+  "reasons": ["..."],
+  "violated_rules": ["R1_no_fabrication_label"],
+  "input_sha256": "sha256:...",
+  "engine": {"name": "szl_nemo.rule_check", "kind": "deterministic-python-stdlib"},
+  "receipt_status": "UNSIGNED_HONEST"
+}
+```
+
+Receipts (`szl_nemo.build_receipt`) hash the canonical decision payload and
+chain to the previous receipt (`prev_receipt_sha256`). They are
+**UNSIGNED_HONEST**: anyone can recompute and verify integrity/order, but no
+signature identity is claimed here — signing lives in the DSSE lane
+(`szl-receipt`). `test_vectors/allow.jsonl` + `deny.jsonl` pin the expected
+decision for every doctrine rule; CI refuses unsafe serialization in the
+approved path and fails if any vector drifts.
+
 ## What it is / is NOT
 
 - **IS:** `scripts/forge.py` + `scripts/eval.py` + `TRAINING_RECEIPT.json` describing a `Pipeline(TfidfVectorizer → LogisticRegression)` that triages whether a *text answer* conforms to five doctrine rules (R1–R5). Deterministic `rule_check()` in `scripts/forge.py` remains ground truth. Optional `Modelfile` is prompt text only.
