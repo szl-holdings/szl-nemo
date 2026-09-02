@@ -30,11 +30,15 @@ jobs:
           python-version: "3.12"
           check-latest: false
 
-      - name: Refuse pickle/joblib in approved path
+      - name: Refuse generated or unsafe artifacts in approved path
         shell: bash
         run: |
           set -euo pipefail
           test ! -e model.joblib
+          if git ls-files 'build/**' | grep -q .; then
+            echo "generated build/ artifacts must not be committed" >&2
+            exit 1
+          fi
           if grep -R -n -E "joblib\.(load|dump)[[:space:]]*\(|pickle\.loads?[[:space:]]*\(|dill\.load[[:space:]]*\(" scripts tests szl_nemo; then
             echo "unsafe serialization API still in approved path" >&2
             exit 1
@@ -49,12 +53,12 @@ jobs:
         run: |
           set -euo pipefail
           python -I scripts/build_vectors.py
-          git diff --exit-code -- test_vectors/ || {
-            echo "test_vectors are stale; regenerate with scripts/build_vectors.py" >&2
+          git diff --exit-code -- szl_nemo/vectors/ || {
+            echo "package vectors are stale; regenerate with scripts/build_vectors.py" >&2
             exit 1
           }
 
-      - name: CLI selftest
+      - name: CLI selftest from source
         shell: bash
         run: |
           set -euo pipefail
@@ -68,6 +72,31 @@ jobs:
             echo "expected BLOCK decision to exit non-zero" >&2
             exit 1
           fi
+
+      - name: Build wheel and verify installed-mode selftest
+        shell: bash
+        run: |
+          set -euo pipefail
+          wheel_dir="$RUNNER_TEMP/szl-nemo-wheel"
+          venv_dir="$RUNNER_TEMP/szl-nemo-installed"
+          mkdir -p "$wheel_dir"
+          python -m pip wheel --disable-pip-version-check --no-deps --wheel-dir "$wheel_dir" .
+          python -m venv "$venv_dir"
+          "$venv_dir/bin/python" -m pip install --disable-pip-version-check --no-deps "$wheel_dir"/*.whl
+          (
+            cd "$RUNNER_TEMP"
+            "$venv_dir/bin/szl-nemo" selftest
+            "$venv_dir/bin/python" - <<'PY'
+          import importlib.metadata
+          import pathlib
+          import szl_nemo
+
+          package_root = pathlib.Path(szl_nemo.__file__).resolve().parent
+          assert szl_nemo.__version__ == importlib.metadata.version("szl-nemo")
+          assert (package_root / "vectors" / "allow.jsonl").is_file()
+          assert (package_root / "vectors" / "deny.jsonl").is_file()
+          PY
+          )
 
       - name: Receipt round-trip
         shell: bash

@@ -1,7 +1,8 @@
 # SPDX-License-Identifier: Apache-2.0
 """Vector-driven tests: every labelled vector must match ground truth.
 
-Vectors live in test_vectors/*.jsonl with expectations COMPUTED by
+Vectors ship as package data in szl_nemo/vectors/*.jsonl, with
+expectations COMPUTED by
 scripts/build_vectors.py (which refuses to write a mislabelled vector).
 These tests make CI enforce them.
 """
@@ -18,7 +19,9 @@ from szl_nemo.engine import evaluate  # noqa: E402
 from szl_nemo.schema import ALLOW, BLOCK  # noqa: E402
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-VECTORS = os.path.join(ROOT, "test_vectors")
+# Canonical location is the shipped package data so installed-mode
+# `szl-nemo selftest` and CI see identical bytes.
+VECTORS = os.path.join(ROOT, "szl_nemo", "vectors")
 
 
 def _load(name):

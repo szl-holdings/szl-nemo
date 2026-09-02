@@ -30,7 +30,7 @@ EXIT_BLOCK = 1
 EXIT_ERROR = 2
 EXIT_REVIEW = 3
 
-_VECTORS_DIR = Path(__file__).resolve().parent.parent / "test_vectors"
+_VECTORS_DIR = Path(__file__).resolve().parent / "vectors"
 
 
 def _print_decision(decision, out) -> None:
