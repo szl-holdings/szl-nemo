@@ -10,5 +10,6 @@ model.joblib
 .DS_Store
 
 # packaging build artifacts
+build/
+dist/
 *.egg-info/
-__pycache__/
