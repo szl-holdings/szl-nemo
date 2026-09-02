@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "szl-nemo"
-version = "0.3.0"
+version = "0.3.1"
 description = "SOFTWARE/SURROGATE: doctrine rule_check for recipe conformance. Not Nemotron, not an LLM, not a Kernel Hub CUDA kernel."
 readme = "README.md"
 license = { text = "Apache-2.0" }
@@ -19,6 +19,9 @@ szl-nemo = "szl_nemo.cli:main"
 
 [tool.setuptools]
 packages = ["szl_nemo"]
+
+[tool.setuptools.package-data]
+szl_nemo = ["vectors/*.jsonl"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

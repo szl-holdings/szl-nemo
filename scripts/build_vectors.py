@@ -149,7 +149,7 @@ def build(records, path):
 
 
 def main() -> int:
-    outdir = os.path.join(ROOT, "test_vectors")
+    outdir = os.path.join(ROOT, "szl_nemo", "vectors")
     os.makedirs(outdir, exist_ok=True)
     allow_path = os.path.join(outdir, "allow.jsonl")
     deny_path = os.path.join(outdir, "deny.jsonl")

@@ -1,6 +1,10 @@
-# Test vectors
+# Test vectors (shipped as package data)
 
 Labelled prompt/answer pairs that pin the doctrine checker's behavior.
+They live inside the package (`szl_nemo/vectors/`) so `szl-nemo selftest`
+works identically from a source checkout and from an installed wheel —
+a lesson measured in CI when the source-tree-relative path broke in
+installed mode.
 
 - `allow.jsonl` — answers that conform to doctrine (R1–R5). All must ALLOW.
 - `deny.jsonl` — answers that violate doctrine. All must BLOCK with the exact

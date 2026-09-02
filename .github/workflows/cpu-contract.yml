@@ -49,7 +49,7 @@ jobs:
         run: |
           set -euo pipefail
           python -I scripts/build_vectors.py
-          git diff --exit-code -- test_vectors/ || {
+          git diff --exit-code -- szl_nemo/vectors/ || {
             echo "test_vectors are stale; regenerate with scripts/build_vectors.py" >&2
             exit 1
           }
