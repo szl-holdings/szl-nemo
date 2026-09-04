@@ -18,11 +18,15 @@ NUM_CLAIM_RE = re.compile(
     r"|\d+(?:\.\d+)?\s+(?:on|f1))",
     re.I,
 )
+# Users and model outputs commonly spell the name as "Lambda" rather than using
+# the Greek symbol. Both forms carry the same conjecture boundary.
 THEOREM_RE = re.compile(
-    r"\bΛ\b.{0,60}?\b(theorem|proven|proved|certified|guaranteed)\b", re.I | re.S
+    r"\b(?:Λ|Lambda)\b.{0,60}?\b(theorem|proven|proved|certified|guaranteed)\b",
+    re.I | re.S,
 )
 THEOREM_RE2 = re.compile(
-    r"\b(theorem|proven|proved|certified)\b.{0,60}?\bΛ\b", re.I | re.S
+    r"\b(theorem|proven|proved|certified)\b.{0,60}?\b(?:Λ|Lambda)\b",
+    re.I | re.S,
 )
 # NOTE: "100 %" lives outside the \b...\b group on purpose: "%" is a
 # non-word character, so 100\s*%\b can never match (no word boundary
