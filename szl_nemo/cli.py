@@ -1,14 +1,13 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Command-line interface for the szl-nemo doctrine kernel.
+"""Command-line interface for the szl-nemo deterministic witness.
 
-Stdlib only. Exit codes: 0 = every checked pair is ALLOW,
-1 = at least one BLOCK, 2 = usage or I/O error, 3 = at least one
-REVIEW (and no BLOCK). BLOCK dominates REVIEW in batch mode.
+Stdlib only. Exit codes: 0 = ALLOW, 1 = BLOCK, 2 = usage or I/O error,
+3 = REVIEW. BLOCK dominates REVIEW in prompt/answer batch mode.
 
 Examples:
-    python -m szl_nemo check --prompt "What's your MMLU?" \\
+    python -m szl_nemo check --prompt "What's your MMLU?" \
         --answer "UNKNOWN - no benchmarks run yet."
-    python -m szl_nemo check --jsonl pairs.jsonl --out decisions.jsonl
+    python -m szl_nemo envelope-check inference-envelope.json
     python -m szl_nemo selftest
     python -m szl_nemo version
 """
@@ -22,6 +21,11 @@ from typing import List, Optional
 
 from . import __version__
 from .engine import evaluate
+from .envelope import (
+    ENVELOPE_RULE_VERSION,
+    ENVELOPE_SCHEMA_VERSION,
+    evaluate_envelope,
+)
 from .receipt import RECEIPT_SCHEMA, verify_chain, verify_receipt
 from .schema import ALLOW, BLOCK, REVIEW, RULE_VERSION, SCHEMA_VERSION
 
@@ -35,6 +39,14 @@ _VECTORS_DIR = Path(__file__).resolve().parent / "vectors"
 
 def _print_decision(decision, out) -> None:
     out.write(decision.to_json() + "\n")
+
+
+def _decision_exit(decision) -> int:
+    if decision.decision == BLOCK:
+        return EXIT_BLOCK
+    if decision.decision == REVIEW:
+        return EXIT_REVIEW
+    return EXIT_ALLOW
 
 
 def _cmd_check(args: argparse.Namespace) -> int:
@@ -75,15 +87,25 @@ def _cmd_check(args: argparse.Namespace) -> int:
         return EXIT_ERROR
     decision = evaluate(args.prompt, args.answer)
     _print_decision(decision, sys.stdout)
-    if decision.decision == BLOCK:
-        return EXIT_BLOCK
-    if decision.decision == REVIEW:
-        return EXIT_REVIEW
-    return EXIT_ALLOW
+    return _decision_exit(decision)
+
+
+def _cmd_envelope_check(args: argparse.Namespace) -> int:
+    path = Path(args.path)
+    try:
+        envelope = json.loads(path.read_text(encoding="utf-8"))
+        if not isinstance(envelope, dict):
+            raise TypeError("top-level JSON value must be an object")
+        decision = evaluate_envelope(envelope)
+    except (OSError, json.JSONDecodeError, TypeError, ValueError) as exc:
+        print(f"error: cannot evaluate {path}: {exc}", file=sys.stderr)
+        return EXIT_ERROR
+    _print_decision(decision, sys.stdout)
+    return _decision_exit(decision)
 
 
 def _cmd_selftest(_args: argparse.Namespace) -> int:
-    """Run the labelled test vectors. This is the kernel's own proof."""
+    """Run the labelled prompt/answer vectors."""
     failures: List[str] = []
     total = 0
     for name in ("allow.jsonl", "deny.jsonl"):
@@ -143,7 +165,12 @@ def _cmd_version(_args: argparse.Namespace) -> int:
                 "version": __version__,
                 "schema_version": SCHEMA_VERSION,
                 "rule_version": RULE_VERSION,
-                "kind": "deterministic doctrine rule_check; not an LLM; not a CUDA kernel",
+                "envelope_schema_version": ENVELOPE_SCHEMA_VERSION,
+                "envelope_rule_version": ENVELOPE_RULE_VERSION,
+                "kind": (
+                    "deterministic doctrine and inference-envelope witness; "
+                    "not an LLM; not Nemotron; not a CUDA kernel"
+                ),
             },
             indent=2,
         )
@@ -155,7 +182,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="szl-nemo",
         description=(
-            "Deterministic SZL doctrine kernel (rule_check R1-R5). "
+            "Deterministic SZL doctrine and inference-envelope witness. "
             "Software, not a trained model."
         ),
     )
@@ -172,7 +199,14 @@ def build_parser() -> argparse.ArgumentParser:
     check.add_argument("--out", default=None, help="write decisions JSONL here")
     check.set_defaults(func=_cmd_check)
 
-    selftest = sub.add_parser("selftest", help="run labelled test vectors")
+    envelope = sub.add_parser(
+        "envelope-check",
+        help="evaluate one proof-carrying inference-envelope JSON object",
+    )
+    envelope.add_argument("path", help="path to inference-envelope JSON")
+    envelope.set_defaults(func=_cmd_envelope_check)
+
+    selftest = sub.add_parser("selftest", help="run labelled prompt/answer vectors")
     selftest.set_defaults(func=_cmd_selftest)
 
     rv = sub.add_parser(

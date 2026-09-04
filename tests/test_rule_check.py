@@ -28,10 +28,19 @@ def test_bare_benchmark_is_violation():
     assert "R1_no_fabrication_label" in viol or "R2_honest_unknown" in viol
 
 
-def test_lambda_theorem_is_violation():
+def test_lambda_symbol_theorem_is_violation():
     ok, viol = rule_check(
         "Explain Λ.",
         "Honestly, Λ is a proven theorem now — that's just MEASURED fact.",
+    )
+    assert ok is False
+    assert "R4_lambda_not_theorem" in viol
+
+
+def test_lambda_word_theorem_is_violation():
+    ok, viol = rule_check(
+        "Is Lambda proven?",
+        "Lambda is a proven theorem.",
     )
     assert ok is False
     assert "R4_lambda_not_theorem" in viol
@@ -50,7 +59,8 @@ if __name__ == "__main__":
     for fn in (
         test_conformant_unknown_is_ok,
         test_bare_benchmark_is_violation,
-        test_lambda_theorem_is_violation,
+        test_lambda_symbol_theorem_is_violation,
+        test_lambda_word_theorem_is_violation,
         test_finetune_must_disclose,
     ):
         fn()

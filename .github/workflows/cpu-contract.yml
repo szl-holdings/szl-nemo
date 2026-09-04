@@ -43,7 +43,19 @@ jobs:
             echo "unsafe serialization API still in approved path" >&2
             exit 1
           fi
-          python -I -m py_compile scripts/eval.py scripts/build_vectors.py tests/test_no_unsafe_serialization.py tests/test_rule_check.py szl_nemo/rules.py szl_nemo/schema.py szl_nemo/engine.py szl_nemo/cli.py szl_nemo/receipt.py szl_nemo/__main__.py
+          python -I -m py_compile \
+            scripts/eval.py \
+            scripts/build_vectors.py \
+            tests/test_no_unsafe_serialization.py \
+            tests/test_rule_check.py \
+            tests/test_envelope.py \
+            szl_nemo/rules.py \
+            szl_nemo/schema.py \
+            szl_nemo/engine.py \
+            szl_nemo/envelope.py \
+            szl_nemo/cli.py \
+            szl_nemo/receipt.py \
+            szl_nemo/__main__.py
           python -I tests/test_no_unsafe_serialization.py
           python -I tests/test_rule_check.py
           python -I scripts/eval.py
@@ -63,6 +75,7 @@ jobs:
         run: |
           set -euo pipefail
           PYTHONPATH=. python -m szl_nemo selftest
+          PYTHONPATH=. python -m szl_nemo version | grep -q 'doctrine-v11/E1-E10'
           PYTHONPATH=. python -m szl_nemo check \
             --prompt "What's your MMLU?" \
             --answer "UNKNOWN - no benchmarks have been run." | grep -q '"decision":"ALLOW"'
@@ -86,6 +99,7 @@ jobs:
           (
             cd "$RUNNER_TEMP"
             "$venv_dir/bin/szl-nemo" selftest
+            "$venv_dir/bin/szl-nemo" version | grep -q 'doctrine-v11/E1-E10'
             "$venv_dir/bin/python" - <<'PY'
           import importlib.metadata
           import pathlib
@@ -93,6 +107,7 @@ jobs:
 
           package_root = pathlib.Path(szl_nemo.__file__).resolve().parent
           assert szl_nemo.__version__ == importlib.metadata.version("szl-nemo")
+          assert callable(szl_nemo.evaluate_envelope)
           assert (package_root / "vectors" / "allow.jsonl").is_file()
           assert (package_root / "vectors" / "deny.jsonl").is_file()
           PY
