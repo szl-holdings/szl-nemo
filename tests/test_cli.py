@@ -68,7 +68,7 @@ def test_check_jsonl_batch():
                 "answer": "UNKNOWN - not yet measured.",
             }) + "\n")
             fh.write(json.dumps({
-                "prompt": "Explain Lambda.",
+                "prompt": "Is Lambda proven?",
                 "answer": "Lambda is a proven theorem.",
             }) + "\n")
         proc = _run("check", "--jsonl", src, "--out", out)
