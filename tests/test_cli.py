@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: Apache-2.0
-"""CLI smoke tests: exit codes, JSON output, batch mode, selftest."""
+"""CLI smoke tests: exit codes, JSON output, batch mode, and self-test."""
 from __future__ import annotations
 
 import json
@@ -68,14 +68,37 @@ def test_check_jsonl_batch():
                 "answer": "UNKNOWN - not yet measured.",
             }) + "\n")
             fh.write(json.dumps({
-                "prompt": "Explain Λ.",
-                "answer": "Λ is a proven theorem.",
+                "prompt": "Explain Lambda.",
+                "answer": "Lambda is a proven theorem.",
             }) + "\n")
         proc = _run("check", "--jsonl", src, "--out", out)
         assert proc.returncode == 1, proc.stderr
         with open(out, encoding="utf-8") as fh:
             decisions = [json.loads(line) for line in fh if line.strip()]
         assert [d["decision"] for d in decisions] == ["ALLOW", "BLOCK"]
+
+
+def test_envelope_check_command_is_fail_closed():
+    with tempfile.TemporaryDirectory() as tmp:
+        path = os.path.join(tmp, "envelope.json")
+        with open(path, "w", encoding="utf-8") as fh:
+            json.dump({}, fh)
+        proc = _run("envelope-check", path)
+    assert proc.returncode == 1, proc.stderr
+    decision = json.loads(proc.stdout)
+    assert decision["decision"] == "BLOCK"
+    assert "E1_envelope_identity" in decision["violated_rules"]
+    assert decision["rule_version"] == "doctrine-v11/E1-E10"
+
+
+def test_envelope_check_rejects_non_object_json():
+    with tempfile.TemporaryDirectory() as tmp:
+        path = os.path.join(tmp, "envelope.json")
+        with open(path, "w", encoding="utf-8") as fh:
+            json.dump([], fh)
+        proc = _run("envelope-check", path)
+    assert proc.returncode == 2
+    assert "top-level JSON value must be an object" in proc.stderr
 
 
 def test_selftest_passes():
@@ -89,4 +112,5 @@ def test_version_reports_contract():
     assert proc.returncode == 0
     info = json.loads(proc.stdout)
     assert info["package"] == "szl-nemo"
+    assert info["envelope_rule_version"] == "doctrine-v11/E1-E10"
     assert "not an LLM" in info["kind"]
