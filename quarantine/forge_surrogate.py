@@ -23,13 +23,19 @@ its fidelity is MEASURED against `rule_check()`. The checker stays authoritative
 Self-contained: resolves the Modelfile from the repo's own dir when run in-repo,
 else from /tmp/kernel-probe. Seeded, receipted, reproducible."""
 import json, os, random, re, sys, time, hashlib, platform
+
+raise SystemExit(
+    "REFUSE: pickle/joblib is not an approved load path. "
+    "This historical generator is quarantined and must not emit model.joblib. "
+    "Ground truth is szl_nemo.rule_check (stdlib/JSON)."
+)
+
 import numpy as np
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
 from sklearn.pipeline import Pipeline
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score, f1_score, recall_score
-import joblib
 
 SEED = 20260721
 random.seed(SEED); np.random.seed(SEED)
@@ -318,8 +324,11 @@ gen_probe_n = int(len(gp_true))
 
 _sd = os.path.dirname(os.path.abspath(__file__))
 out = os.path.dirname(_sd) if os.path.basename(_sd) == "scripts" else _sd
-joblib.dump(clf, f"{out}/model.joblib")
-model_sha = hashlib.sha256(open(f"{out}/model.joblib", "rb").read()).hexdigest()
+raise SystemExit(
+    "REFUSE: model.joblib is not an approved load path. "
+    "Do not emit pickle/joblib. Use szl_nemo.rule_check."
+)
+model_sha = "UNAVAILABLE"
 
 receipt = {
     "artifact": "SZLHOLDINGS/szl-nemo recipe-conformance scorer v1",
