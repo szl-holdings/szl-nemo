@@ -1,0 +1,13 @@
+{
+  "title": "szl-nemo — doctrine rule_check for recipe conformance (SOFTWARE/SURROGATE)",
+  "upload_type": "software",
+  "description": "SOFTWARE/SURROGATE: doctrine rule_check for recipe conformance. Not Nemotron, not an LLM, not a CUDA kernel; joblib quarantined. Mirrors HF SZLHOLDINGS/szl-nemo. Doctrine v11.",
+  "creators": [{"name": "Lutar, Stephen P., Jr."}],
+  "license": {"id": "Apache-2.0"},
+  "keywords": ["governed-ai", "surrogate", "recipe-conformance", "szl-holdings"],
+  "related_identifiers": [
+    {"identifier": "10.5281/zenodo.19944926", "relation": "isSupplementTo", "scheme": "doi"},
+    {"identifier": "https://huggingface.co/SZLHOLDINGS/szl-nemo", "relation": "isDocumentedBy", "scheme": "url"}
+  ],
+  "notes": "NEW work per the szl-papers deposit policy. Mint via GitHub release after enabling this repo in the owner's Zenodo account."
+}
