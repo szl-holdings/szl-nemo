@@ -1,0 +1,63 @@
+{
+  "schema": "szl.frontier.nemo-witness-binding.v1",
+  "observed_at": "2026-09-07T13:36:00Z",
+  "owner": "szl-nemo",
+  "canonical_frontier_contract": "https://github.com/szl-holdings/szl-frontier/blob/94a039d086d1343d1fcfe5bca617f601006ca05b/public/frontier/top-choice-integration-matrix.v1.json",
+  "canonical_frontier_revision": "94a039d086d1343d1fcfe5bca617f601006ca05b",
+  "serve_contract_revision": "74c2fa12ee3cd17cc8d80ac85801f11683912176",
+  "default_effect": "HOLD",
+  "training_authority": false,
+  "routing_authority": false,
+  "execution_authority": false,
+  "production_promotion": false,
+  "candidates": [
+    {
+      "id": "k2-horizon-mova-36b-a4b-2026-09-03",
+      "source": "https://huggingface.co/IFM/K2-Horizon-MoVA-36B-A4B",
+      "source_revision": "05cab0a4d7150c1c460a000b37ff40cc1af2feaa",
+      "artifact_fingerprint": "259e31e5a7143d4f6cca70ed238296e9374b0a51aa497563f62e10af990ec9e2",
+      "status": "QUALIFICATION_REQUIRED",
+      "witness_role": "held-out agent/tool/governance qualification",
+      "required_metrics": [
+        "agent_task_success_rate",
+        "tool_call_exact_match",
+        "schema_exact_match",
+        "long_context_grounded_recall",
+        "unsupported_claim_rate",
+        "refusal_and_policy_regression_rate"
+      ],
+      "required_invariants": [
+        "identical held-out fixtures are used for candidate and current control",
+        "tool calls are proposals only and cannot directly execute",
+        "every evidence-bearing claim is traceable to the admitted fixture",
+        "tenant and domain canaries never cross boundaries",
+        "runtime/model/revision/quantization identity is copied into the witness receipt",
+        "failed or unavailable evaluation is reported honestly and never converted into a pass"
+      ],
+      "receipt_subject": "szl-nemo-frontier-model-qualification",
+      "promotion_effect": "NONE"
+    },
+    {
+      "id": "vaani-noise-event-2026-08-07",
+      "source": "https://huggingface.co/datasets/ARTPARK-IISc/Vaani-Noise-Event-Dataset",
+      "source_revision": "be488e2ac12fd62bef46b9f83e3a5feded575333",
+      "artifact_fingerprint": "eaaee5703e5288affd9447ffb29feca84df66f0b70eef152a1f8913e8db7d4da",
+      "status": "GATED_HOLD",
+      "witness_role": "noise-robust speech evaluation after authorized access",
+      "required_metrics": [
+        "noise_event_detection_quality",
+        "downstream_asr_delta",
+        "privacy_policy_violations"
+      ],
+      "required_invariants": [
+        "no dataset payload is fetched before authorized Hugging Face gate acceptance",
+        "only checksum-pinned bounded samples may enter the first evaluation",
+        "CC-BY-4.0 attribution and repository access conditions remain attached to derived evidence",
+        "speaker identity inference and voice-clone objectives remain out of scope",
+        "failed or unavailable evaluation is reported honestly and never converted into a pass"
+      ],
+      "receipt_subject": "szl-nemo-frontier-speech-data-qualification",
+      "promotion_effect": "NONE"
+    }
+  ]
+}
