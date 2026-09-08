@@ -1,0 +1,182 @@
+{
+  "schema": "szl.frontier.nemo-model-wave-witness-envelope.v1",
+  "captured_on": "2026-09-08",
+  "owner": "szl-nemo",
+  "upstream_contracts": {
+    "frontier_registry": {
+      "repository": "szl-holdings/szl-frontier",
+      "revision": "dcc128140f3873d0ca396b9a83cf0eb5a0102b87",
+      "path": "public/frontier/release-evaluation-manifest.v1.json"
+    },
+    "forge_qualification": {
+      "repository": "szl-holdings/szl-forge",
+      "revision": "ffe66a1aba2c6027e48da6f89cdd5d4fc2f87794",
+      "path": "frontier/PINNED_MODEL_WAVE_2026-09-07.json"
+    }
+  },
+  "default_effect": "HOLD",
+  "evaluation_mode": "HELD_OUT_COMPARATIVE_WITNESS",
+  "authorities": {
+    "training": false,
+    "routing": false,
+    "execution": false,
+    "production_promotion": false
+  },
+  "truth_labels": [
+    "MEASURED",
+    "REPORTED",
+    "MODELED",
+    "CONJECTURE",
+    "UNKNOWN",
+    "UNAVAILABLE"
+  ],
+  "candidate_identities": [
+    {
+      "id": "glm-5-3-flash",
+      "model_id": "zai-org/GLM-5.3-Flash",
+      "revision": "eb9eb208eb0d988989d07a6a12d0fdeb5f52574a",
+      "forge_role": "PRIMARY_EVALUATION",
+      "forge_evaluation_state": "SOURCE_PINNED",
+      "declared_license": "mit",
+      "license_posture": "COMPATIBILITY_REVIEW_PENDING",
+      "witness_status": "QUALIFICATION_EVIDENCE_REQUIRED",
+      "required_metrics": [
+        "schema_valid_rate",
+        "grounding_correct_rate",
+        "citation_binding_rate",
+        "authority_boundary_pass_rate",
+        "tool_call_correct_rate",
+        "abstention_correct_rate",
+        "latency_ms",
+        "peak_memory_mb",
+        "cost_per_success"
+      ],
+      "promotion_effect": "NONE",
+      "results": null
+    },
+    {
+      "id": "deepseek-v4-flash-vision-exp",
+      "model_id": "deepseek-ai/DeepSeek-V4-Flash-Vision-Exp",
+      "revision": "6821d6ad3681a4b137b066b76094fa82ebd0a380",
+      "forge_role": "EXPERIMENTAL_EVALUATION",
+      "forge_evaluation_state": "SOURCE_PINNED",
+      "declared_license": "mit",
+      "license_posture": "COMPATIBILITY_REVIEW_PENDING",
+      "witness_status": "QUALIFICATION_EVIDENCE_REQUIRED",
+      "required_metrics": [
+        "schema_valid_rate",
+        "grounding_correct_rate",
+        "citation_binding_rate",
+        "authority_boundary_pass_rate",
+        "tool_call_correct_rate",
+        "abstention_correct_rate",
+        "latency_ms",
+        "peak_memory_mb",
+        "cost_per_success"
+      ],
+      "promotion_effect": "NONE",
+      "results": null
+    },
+    {
+      "id": "qwen3-8-flash-next-nvfp4",
+      "model_id": "nvidia/Qwen3.8-Flash-Next-NVFP4",
+      "revision": "fc694b54fb0174e0913e6adf86691ef85a4ead47",
+      "base_model_id": "Qwen/Qwen3.8-Flash-Next",
+      "base_model_revision": "de4b8e4d43b917e7706784d8bb445c9af86a3540",
+      "forge_role": "QUANTIZED_BENCHMARK",
+      "forge_evaluation_state": "LICENSE_REVIEW_REQUIRED",
+      "declared_license": "other",
+      "license_posture": "REVIEW_REQUIRED",
+      "witness_status": "LICENSE_AND_QUALIFICATION_HOLD",
+      "required_metrics": [
+        "quality_delta",
+        "tokens_per_second",
+        "time_to_first_token_ms",
+        "peak_memory_mb",
+        "load_success_rate",
+        "fallback_success_rate"
+      ],
+      "promotion_effect": "NONE",
+      "results": null
+    },
+    {
+      "id": "glm-5-3-reference",
+      "model_id": "zai-org/GLM-5.3",
+      "revision": "aca966e4e02791568aa6a4ced368624b3d897f42",
+      "forge_role": "REFERENCE_ONLY",
+      "forge_evaluation_state": "LICENSE_REVIEW_REQUIRED",
+      "declared_license": "other",
+      "license_posture": "REVIEW_REQUIRED",
+      "witness_status": "REFERENCE_HOLD",
+      "required_metrics": [
+        "schema_valid_rate",
+        "grounding_correct_rate",
+        "citation_binding_rate",
+        "authority_boundary_pass_rate",
+        "latency_ms",
+        "peak_memory_mb",
+        "cost_per_success"
+      ],
+      "promotion_effect": "NONE",
+      "results": null
+    },
+    {
+      "id": "qwen3-8-flash-next-base-reference",
+      "model_id": "Qwen/Qwen3.8-Flash-Next",
+      "revision": "de4b8e4d43b917e7706784d8bb445c9af86a3540",
+      "forge_role": "BASE_REFERENCE_ONLY",
+      "forge_evaluation_state": "LICENSE_REVIEW_REQUIRED",
+      "declared_license": "other",
+      "license_posture": "REVIEW_REQUIRED",
+      "witness_status": "REFERENCE_HOLD",
+      "required_metrics": [
+        "quality_delta",
+        "schema_valid_rate",
+        "grounding_correct_rate",
+        "latency_ms",
+        "peak_memory_mb"
+      ],
+      "promotion_effect": "NONE",
+      "results": null
+    }
+  ],
+  "witness_receipt": {
+    "schema": "szl.nemo.frontier-qualification-receipt.v1",
+    "required_fields": [
+      "candidate_id",
+      "model_id",
+      "model_revision",
+      "tokenizer_revision",
+      "template_revision",
+      "runtime_engine",
+      "runtime_version",
+      "hardware_fingerprint",
+      "software_fingerprint",
+      "fixture_set_sha256",
+      "configuration_sha256",
+      "seed",
+      "baseline_results_sha256",
+      "candidate_results_sha256",
+      "metric_truth_labels",
+      "violated_invariants",
+      "fallback_evidence_sha256",
+      "decision",
+      "receipt_sha256"
+    ],
+    "evidence_complete_decision": "EVIDENCE_COMPLETE_REVIEW_REQUIRED",
+    "incomplete_or_failed_decision": "HOLD",
+    "promotion_effect": "NONE"
+  },
+  "global_invariants": [
+    "Candidate and control use the same checksum-pinned held-out fixtures, scoring code, and seeds where the runtime permits deterministic seeding.",
+    "Every model, tokenizer, template, adapter, runtime, quantization, hardware, software, fixture, and configuration identity is immutable and receipt-bound.",
+    "Model output is proposal only and cannot execute tools, mutate systems, route production traffic, or grant authority.",
+    "A11oy remains the sole consequential-action admission layer after provenance, policy, approval, execution, and verification controls.",
+    "Upstream benchmark and performance claims remain REPORTED and may never be relabeled MEASURED without an SZL run receipt.",
+    "Missing, failed, timed-out, unavailable, or unsupported evaluation is truth-labeled honestly and is never converted into a pass.",
+    "Baseline fallback is exercised for load failure, timeout, malformed output, unsupported modality, and policy rejection.",
+    "License compatibility and remote-code review must pass before any artifact requiring review is downloaded or executed.",
+    "No raw secret, private tenant content, hidden reasoning, or unauthorized dataset payload may enter the witness envelope.",
+    "Nemo can attest evidence completeness or violations only; it cannot promote a model."
+  ]
+}
