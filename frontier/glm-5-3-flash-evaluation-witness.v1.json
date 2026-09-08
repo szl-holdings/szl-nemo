@@ -1,0 +1,67 @@
+{
+  "authenticity_not_established": true,
+  "authorities": {
+    "execution": false,
+    "production_promotion": false,
+    "routing": false,
+    "training": false
+  },
+  "decision": "EVIDENCE_COMPLETE_REVIEW_REQUIRED",
+  "forge_evidence": {
+    "artifact_sha256": "3966569cc96b5303b58ec81e0837fa87a4c6d4c725f3cb1921c933dad8de7961",
+    "commit": "225751bcf16372360df9ad04d63cba39fc8bc0ca",
+    "path": "frontier/evidence/glm-5-3-flash-provider-evaluation-2026-09-08.json",
+    "repository": "szl-holdings/szl-forge",
+    "workflow_run_id": 34177931732
+  },
+  "hugging_face_evidence": {
+    "commit": "f2b30f160a7884149d3ac474d455ef25a35ac038",
+    "dataset_id": "SZLHOLDINGS/szl-frontier-evaluation-receipts",
+    "path": "runs/2026/09/08/github-34177931732-1-146ffd9a3415/glm-5-3-flash",
+    "receipt_file_sha256": "9a3fd8caa45d0b4a15e85531adc4cfeefdadc9bd496348d94c6aed2e7cbad51b",
+    "subject_receipt_sha256": "bdf6a0aac1af5b06f10ad0e7a9ee9d29e43d16b92654887f0c0b34f25071db46"
+  },
+  "known_bounds": [
+    "provider_execution_weight_revision_not_attested_by_chat_response",
+    "provider_server_hardware_not_disclosed",
+    "provider_runtime_build_not_disclosed",
+    "integrity_receipt_is_unsigned",
+    "four_case_synthetic_suite_does_not_cover_long_context_or_multimodal_quality"
+  ],
+  "observed_at": "2026-09-08T01:57:29Z",
+  "owner": "szl-nemo",
+  "production_disposition": "HOLD",
+  "promotion_effect": "NONE",
+  "schema": "szl.nemo.frontier-evaluation-witness.v1",
+  "signature_status": "UNSIGNED_HONEST",
+  "subject": {
+    "candidate_id": "glm-5-3-flash",
+    "model_id": "zai-org/GLM-5.3-Flash",
+    "provider_route": "zai-org/GLM-5.3-Flash:baseten",
+    "source_revision": "eb9eb208eb0d988989d07a6a12d0fdeb5f52574a"
+  },
+  "truth_labels": {
+    "provider_execution_revision": "UNAVAILABLE",
+    "provider_hardware": "UNAVAILABLE",
+    "provider_runtime_build": "UNAVAILABLE",
+    "receipt_authenticity": "UNESTABLISHED",
+    "request_response_metrics": "MEASURED",
+    "source_file_hashes": "MEASURED"
+  },
+  "witness_checks": {
+    "baseline_score_rate": 0.416667,
+    "candidate_and_baseline_calls_completed": true,
+    "candidate_schema_valid_rate": 1.0,
+    "candidate_score_rate": 0.916667,
+    "fallback_production_authority": "NONE",
+    "fallback_selected_source": "DETERMINISTIC_SAFETY_GUARD",
+    "fallback_semantic_safety_pass": true,
+    "fallback_transport_pass": true,
+    "forge_anchor_bound": true,
+    "hub_commit_resolved": true,
+    "immutable_candidate_source_identity": true,
+    "measured_score_delta": 0.5,
+    "subject_receipt_digest_bound": true
+  },
+  "witness_receipt_sha256": "b5e77ecbcc159eaf09bdfcbfd4547fc7671c7c9ac33ac71dcd4919f335e4c07f"
+}
