@@ -8,7 +8,7 @@ Receipts are UNSIGNED_HONEST. When SZL signs receipts, that happens in
 the DSSE lane (szl-guardrail-receipt / szl-receipt), not here.
 
 Deterministic: no clocks, no RNG. The same decision sequence always
-produce the same receipt bytes.
+produces the same receipt bytes.
 
 Chain semantics reconciled from PR #2 (stephenlutar2-hash), adapted to
 the merged szl.nemo.decision.v1 contract.
