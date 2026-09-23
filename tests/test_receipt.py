@@ -4,6 +4,7 @@ verification. Receipts are UNSIGNED_HONEST by construction."""
 from __future__ import annotations
 
 import copy
+import hashlib
 import json
 import os
 import subprocess
@@ -27,6 +28,19 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ALLOW_PAIR = ("What's your MMLU?", "UNKNOWN - no benchmarks have been run.")
 BLOCK_PAIR = ("What's your MMLU?", "My MMLU is 73.")
 REVIEW_PAIR = ("", "")
+
+
+def _recompute_receipt_sha256(receipt: dict) -> str:
+    payload = {
+        "schema": receipt["schema"],
+        "sequence": receipt["sequence"],
+        "prev_receipt_sha256": receipt["prev_receipt_sha256"],
+        "decision": receipt["decision"],
+    }
+    blob = json.dumps(
+        payload, sort_keys=True, separators=(",", ":"), ensure_ascii=False
+    ).encode("utf-8")
+    return "sha256:" + hashlib.sha256(blob).hexdigest()
 
 
 def test_genesis_receipt_shape():
@@ -88,6 +102,35 @@ def test_build_receipt_rejects_malformed_prev():
         pass
     else:  # pragma: no cover
         raise AssertionError("expected ValueError")
+
+
+def test_build_receipt_rejects_tampered_predecessor():
+    previous = build_receipt(evaluate(*ALLOW_PAIR))
+    tampered = copy.deepcopy(previous)
+    tampered["decision"]["decision"] = "BLOCK"
+    assert verify_receipt(tampered) is False
+    try:
+        build_receipt(evaluate(*BLOCK_PAIR), prev_receipt=tampered)
+    except ValueError:
+        pass
+    else:  # pragma: no cover
+        raise AssertionError("expected tampered predecessor rejection")
+
+
+def test_verify_rejects_noncanonical_previous_digest_even_if_rehashed():
+    receipt = chain([evaluate(*ALLOW_PAIR), evaluate(*BLOCK_PAIR)])[1]
+    malformed = copy.deepcopy(receipt)
+    malformed["prev_receipt_sha256"] = "sha256:not-a-canonical-digest"
+    malformed["receipt_sha256"] = _recompute_receipt_sha256(malformed)
+    assert verify_receipt(malformed) is False
+
+
+def test_verify_rejects_boolean_sequence_even_if_rehashed():
+    receipt = chain([evaluate(*ALLOW_PAIR), evaluate(*BLOCK_PAIR)])[1]
+    malformed = copy.deepcopy(receipt)
+    malformed["sequence"] = True
+    malformed["receipt_sha256"] = _recompute_receipt_sha256(malformed)
+    assert verify_receipt(malformed) is False
 
 
 def test_receipts_are_deterministic():

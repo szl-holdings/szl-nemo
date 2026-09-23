@@ -23,6 +23,7 @@ from .schema import RECEIPT_STATUS_UNSIGNED, Decision
 
 RECEIPT_SCHEMA = "szl.nemo.receipt.v1"
 GENESIS = "sha256:" + "0" * 64
+_HEX = frozenset("0123456789abcdef")
 
 
 def _sha256_canonical(payload: Dict[str, Any]) -> str:
@@ -32,22 +33,28 @@ def _sha256_canonical(payload: Dict[str, Any]) -> str:
     return "sha256:" + hashlib.sha256(blob).hexdigest()
 
 
+def _is_receipt_digest(value: Any) -> bool:
+    if not isinstance(value, str) or not value.startswith("sha256:"):
+        return False
+    digest = value[7:]
+    return len(digest) == 64 and set(digest) <= _HEX
+
+
 def build_receipt(
     decision: Decision,
     prev_receipt: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
     """Build a verifiable, honestly-unsigned receipt for one Decision.
 
-    Pass the previous receipt to extend a chain; sequence numbers and the
-    previous link are derived from it, never trusted from arguments.
+    Pass the previous receipt to extend a chain. A predecessor must itself
+    verify before its sequence and digest are admitted into the new receipt;
+    malformed or tampered history is never converted into a valid successor.
     """
     if prev_receipt is not None:
-        prev_digest = prev_receipt.get("receipt_sha256")
-        prev_sequence = prev_receipt.get("sequence")
-        if not isinstance(prev_digest, str) or not prev_digest.startswith("sha256:"):
-            raise ValueError("previous receipt carries no receipt_sha256")
-        if not isinstance(prev_sequence, int) or prev_sequence < 0:
-            raise ValueError("previous receipt carries an invalid sequence")
+        if not verify_receipt(prev_receipt):
+            raise ValueError("previous receipt failed verification")
+        prev_digest = prev_receipt["receipt_sha256"]
+        prev_sequence = prev_receipt["sequence"]
         sequence = prev_sequence + 1
         prev_link = prev_digest
     else:
@@ -76,13 +83,13 @@ def verify_receipt(receipt: Any) -> bool:
         if receipt.get("receipt_status") != RECEIPT_STATUS_UNSIGNED:
             return False
         claimed = receipt.get("receipt_sha256")
-        if not isinstance(claimed, str) or not claimed.startswith("sha256:"):
+        if not _is_receipt_digest(claimed):
             return False
         sequence = receipt.get("sequence")
         prev_link = receipt.get("prev_receipt_sha256")
-        if not isinstance(sequence, int) or sequence < 0:
+        if type(sequence) is not int or sequence < 0:
             return False
-        if not isinstance(prev_link, str) or not prev_link.startswith("sha256:"):
+        if not _is_receipt_digest(prev_link):
             return False
         if (sequence == 0) != (prev_link == GENESIS):
             return False
