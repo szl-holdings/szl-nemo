@@ -1,0 +1,4 @@
+# hf/hub-import/ holds verbatim Hub bytes that tests check by git blob id.
+# Never convert their line endings.
+hf/** text eol=lf
+hf/hub-import/** -text

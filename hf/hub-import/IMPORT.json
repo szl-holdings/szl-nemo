@@ -1,0 +1,151 @@
+{
+  "schema": "szl.hf-hub-import.v1",
+  "generator": "scripts/hf_hub_import.py",
+  "method": "anonymous public Hub API (no token, read-only)",
+  "generated_at": "2026-09-29T15:20:52Z",
+  "compared_against": {
+    "git_head": "f8ecfc3ca1d1ae64798a5ba2c5957e4729ec0160",
+    "tree": "working tree at generation time"
+  },
+  "path_map": {
+    "README.md": "CARD.md",
+    "build/<variant>/<module>/<file>": "torch-ext/<module>/<file>"
+  },
+  "targets": [
+    {
+      "repo_type": "model",
+      "repo_id": "SZLHOLDINGS/szl-nemo",
+      "revision": "56c429886bf5ea98826bf99b27313626d70f01cc",
+      "last_modified": "2026-09-28T21:04:49.000Z",
+      "card": {
+        "path": "hf/hub-import/model.README.md",
+        "blob_oid": "d54ba3f465245217f7083e947f7d5671ed2fbf5d",
+        "sha256": "39a061bf5e5d3d153e88313533a16f188fd948360199460087e91739ddf24a25",
+        "bytes": 5861,
+        "has_front_matter": true,
+        "line_endings": "lf",
+        "source_url": "https://huggingface.co/SZLHOLDINGS/szl-nemo/resolve/56c429886bf5ea98826bf99b27313626d70f01cc/README.md"
+      },
+      "files": [
+        {
+          "path": ".gitattributes",
+          "oid": "a6344aac8c09253b3b630fb776ae94478aa0275b",
+          "size": 1519,
+          "github_path": ".gitattributes",
+          "status": "differs"
+        },
+        {
+          "path": "BASE_MODEL_MANIFEST.json",
+          "oid": "b55db244707b565b6211b794eecd7b3b677adb9e",
+          "size": 1601,
+          "github_path": "BASE_MODEL_MANIFEST.json",
+          "status": "same"
+        },
+        {
+          "path": "BENCH.laptop-blackwell.json",
+          "oid": "5672bc42bb469240a59dc4d8f2afd03be63a1a49",
+          "size": 6395,
+          "github_path": "BENCH.laptop-blackwell.json",
+          "status": "hub_only"
+        },
+        {
+          "path": "LICENSE",
+          "oid": "d645695673349e3947e8e5ae42332d0ac3164cd7",
+          "size": 11358,
+          "github_path": "LICENSE",
+          "status": "same"
+        },
+        {
+          "path": "Modelfile",
+          "oid": "563683f65a282d38e2a0a22527204f6619b0d179",
+          "size": 1137,
+          "github_path": "Modelfile",
+          "status": "same"
+        },
+        {
+          "path": "OPERATIONAL.json",
+          "oid": "08208349fe6c23a05a06d9f20a80cbc9ca0daad5",
+          "size": 2060,
+          "github_path": "OPERATIONAL.json",
+          "status": "hub_only"
+        },
+        {
+          "path": "PROMOTION_READINESS_AUDIT.json",
+          "oid": "f7394ecd63975a39c87f93d24ce62765d2cec6cf",
+          "size": 11560,
+          "github_path": "PROMOTION_READINESS_AUDIT.json",
+          "status": "hub_only"
+        },
+        {
+          "path": "README.md",
+          "oid": "d54ba3f465245217f7083e947f7d5671ed2fbf5d",
+          "size": 5861,
+          "github_path": "CARD.md",
+          "status": "hub_only"
+        },
+        {
+          "path": "SZL_ESTATE_MANAGED.json",
+          "oid": "7bca667118d84589163ac9f1dfecf55c4c75842f",
+          "size": 674,
+          "github_path": "SZL_ESTATE_MANAGED.json",
+          "status": "same"
+        },
+        {
+          "path": "TRAINING_RECEIPT.json",
+          "oid": "f2a4ecf3a74b38d3521beb873c78d86121decbf5",
+          "size": 3078,
+          "github_path": "TRAINING_RECEIPT.json",
+          "status": "differs"
+        },
+        {
+          "path": "bom/model-bom.cdx.json",
+          "oid": "c26f8693f9dd05f1eb79a301f5e5a16da32508b9",
+          "size": 5358,
+          "github_path": "bom/model-bom.cdx.json",
+          "status": "hub_only"
+        },
+        {
+          "path": "card/holo-banner.svg",
+          "oid": "4a2ffe24514f124ffb1311b3f790fa9b185fb664",
+          "size": 2471,
+          "github_path": "card/holo-banner.svg",
+          "status": "hub_only"
+        },
+        {
+          "path": "ollama_probe.laptop.json",
+          "oid": "7feb7be38225df3d691149c31c749f5759fda433",
+          "size": 532,
+          "github_path": "ollama_probe.laptop.json",
+          "status": "hub_only"
+        },
+        {
+          "path": "scripts/eval.py",
+          "oid": "537f6c2bd0bccf32d3ddc6e8ee55c1636cfc6686",
+          "size": 1553,
+          "github_path": "scripts/eval.py",
+          "status": "differs"
+        },
+        {
+          "path": "scripts/forge.py",
+          "oid": "6aba08450e49e31dd51d3fa7aff8d168dffe46a1",
+          "size": 20557,
+          "github_path": "scripts/forge.py",
+          "status": "hub_only"
+        },
+        {
+          "path": "szl_nemo/rules.py",
+          "oid": "b5224d366f5841cc815d00f77797b155d23ab88d",
+          "size": 2997,
+          "github_path": "szl_nemo/rules.py",
+          "status": "differs"
+        }
+      ],
+      "summary": {
+        "files": 16,
+        "same": 4,
+        "differs": 4,
+        "hub_only": 8
+      }
+    }
+  ]
+}
