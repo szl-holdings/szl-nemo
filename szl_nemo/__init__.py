@@ -24,7 +24,7 @@ from .receipt import build_receipt, chain, verify_chain, verify_receipt
 from .rules import RULE_IDS, rule_check
 from .schema import ALLOW, BLOCK, REVIEW, Decision
 
-__version__ = "0.4.0"
+__version__ = "0.4.1"
 __all__ = [
     "ALLOW",
     "BLOCK",
