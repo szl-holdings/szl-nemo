@@ -1,4 +1,4 @@
-[![PyPI](https://img.shields.io/pypi/v/szl-nemo)](https://pypi.org/project/szl-nemo/) [![Python](https://img.shields.io/pypi/pyversions/szl-nemo)](https://pypi.org/project/szl-nemo/) [![CI](https://github.com/szl-holdings/szl-nemo/actions/workflows/cpu-contract.yml/badge.svg)](https://github.com/szl-holdings/szl-nemo/actions/workflows/cpu-contract.yml) [![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue)](LICENSE)
+[![PyPI](https://img.shields.io/pypi/v/szl-nemo)](https://pypi.org/project/szl-nemo/) [![Python](https://img.shields.io/pypi/pyversions/szl-nemo)](https://pypi.org/project/szl-nemo/) [![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/szl-holdings/szl-nemo/badge)](https://scorecard.dev/viewer/?uri=github.com/szl-holdings/szl-nemo) [![CI](https://github.com/szl-holdings/szl-nemo/actions/workflows/cpu-contract.yml/badge.svg)](https://github.com/szl-holdings/szl-nemo/actions/workflows/cpu-contract.yml) [![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue)](LICENSE)
 
 ## Quickstart
 
