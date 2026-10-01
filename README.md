@@ -1,3 +1,14 @@
+[![PyPI](https://img.shields.io/pypi/v/szl-nemo)](https://pypi.org/project/szl-nemo/) [![Python](https://img.shields.io/pypi/pyversions/szl-nemo)](https://pypi.org/project/szl-nemo/) [![CI](https://github.com/szl-holdings/szl-nemo/actions/workflows/cpu-contract.yml/badge.svg)](https://github.com/szl-holdings/szl-nemo/actions/workflows/cpu-contract.yml) [![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue)](LICENSE)
+
+## Quickstart
+
+```bash
+pip install szl-nemo
+szl-nemo --help   # deterministic doctrine checker (R1-R5) + proof-carrying witness
+```
+
+---
+
 ---
 license: apache-2.0
 tags:
