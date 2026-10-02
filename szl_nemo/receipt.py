@@ -21,15 +21,33 @@ from typing import Any, Dict, List, Optional
 
 from .schema import RECEIPT_STATUS_UNSIGNED, Decision
 
+# Shared canonicalisation (szl-holdings/szl-evidence-core @ de27568d706c): identical bytes to
+# the local implementation below for every valid JSON value, with the profile declared
+# explicitly (CANON_UTF8: UTF-8). One deliberate difference: NaN/Infinity raise at emit
+# time instead of producing text no conforming JSON reader can parse. The local
+# implementation stays as the fallback so nothing here depends on the package.
+try:
+    from szl_evidence_core.canonical import CANON_UTF8 as _CANON_PROFILE
+    from szl_evidence_core.canonical import canonical_bytes as _shared_canonical_bytes
+    _CANON_SOURCE = "szl_evidence_core"
+except Exception:  # pragma: no cover - fallback to the local implementation
+    _CANON_PROFILE = 'szl.lambda/v1'
+    _shared_canonical_bytes = None
+    _CANON_SOURCE = "local"
+
+
 RECEIPT_SCHEMA = "szl.nemo.receipt.v1"
 GENESIS = "sha256:" + "0" * 64
 _HEX = frozenset("0123456789abcdef")
 
 
 def _sha256_canonical(payload: Dict[str, Any]) -> str:
-    blob = json.dumps(
-        payload, sort_keys=True, separators=(",", ":"), ensure_ascii=False
-    ).encode("utf-8")
+    if _shared_canonical_bytes is not None:
+        blob = _shared_canonical_bytes(payload, profile=_CANON_PROFILE, check=False)
+    else:
+        blob = json.dumps(
+            payload, sort_keys=True, separators=(",", ":"), ensure_ascii=False
+        ).encode("utf-8")
     return "sha256:" + hashlib.sha256(blob).hexdigest()
 
 
