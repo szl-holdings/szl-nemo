@@ -12,15 +12,22 @@ from typing import List, Tuple
 LABEL_RE = re.compile(r"\b(MEASURED|REPORTED|MODELED|HEURISTIC|UNKNOWN|UNAVAILABLE)\b")
 # Match whole numeric/metric tokens, not fragments of case IDs or SHA-256
 # digests (for example "98acc" or "2f1" inside a longer hex identifier).
-# Keep compact real claims such as "95f1" and "73accuracy" in scope. The
-# percent alternative deliberately has no trailing word boundary: % is not
-# a word character. This remains a lexical checker, not evidence verification.
+# ASCII identifier guards keep adjacent non-English prose in scope. Parse a
+# complete decimal/scientific literal rather than its exponent suffix. This is
+# still a lexical checker, not a general JSON parser or evidence verification.
+_NUMBER = r"(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?"
+_NUMBER_START = r"(?<![A-Za-z0-9_.])"
 NUM_CLAIM_RE = re.compile(
-    r"(\b\d+(?:\.\d+)?\s*%"
-    r"|\b\d+(?:\.\d+)?\s*(?:percent|points?|pts|tokens?/s|ms|bleu|rouge|"
-    r"accuracy|acc|f1|mmlu|score|perplexity|ppl)\b"
+    r"(" + _NUMBER_START + _NUMBER + r"\s*%"
+    r"|" + _NUMBER_START + _NUMBER + r"\s*(?:percent|points?|pts|tokens?/s|ms|bleu|rouge|"
+    r"accuracy|acc|f1|mmlu|score|perplexity|ppl)(?![A-Za-z0-9_])"
     r"|\b(?:score|accuracy|acc|f1|mmlu|ppl|perplexity|coverage)\b[^.]{0,20}?\b\d+(?:\.\d+)?"
-    r"|\b\d+(?:\.\d+)?\s+(?:on|f1)\b)",
+    r"|" + _NUMBER_START + _NUMBER + r"\s+(?:on|f1)(?![A-Za-z0-9_])"
+    # A snake-case metric KEY must have its own immediate numeric value or
+    # complete numeric string. No borrowing another field's number, and no
+    # optional quote that could admit an incomplete or mixed-text string.
+    r'|"(?:[A-Za-z][A-Za-z0-9]*_)+(?:score|accuracy|acc|f1|mmlu|ppl|perplexity|coverage)"'
+    r'\s*:\s*(?:"[+-]?' + _NUMBER + r'"|[+-]?' + _NUMBER + r"(?![A-Za-z0-9_.])))",
     re.I,
 )
 # Users and model outputs commonly spell the name as "Lambda" rather than using
