@@ -10,12 +10,17 @@ import re
 from typing import List, Tuple
 
 LABEL_RE = re.compile(r"\b(MEASURED|REPORTED|MODELED|HEURISTIC|UNKNOWN|UNAVAILABLE)\b")
+# Match whole numeric/metric tokens, not fragments of case IDs or SHA-256
+# digests (for example "98acc" or "2f1" inside a longer hex identifier).
+# Keep compact real claims such as "95f1" and "73accuracy" in scope. The
+# percent alternative deliberately has no trailing word boundary: % is not
+# a word character. This remains a lexical checker, not evidence verification.
 NUM_CLAIM_RE = re.compile(
-    r"(\d+(?:\.\d+)?\s*%"
-    r"|\d+(?:\.\d+)?\s*(?:percent|points?|pts|tokens?/s|ms|bleu|rouge|"
-    r"accuracy|acc|f1|mmlu|score|perplexity|ppl)"
-    r"|(?:score|accuracy|acc|f1|mmlu|ppl|perplexity|coverage)\b[^.]{0,20}?\b\d+(?:\.\d+)?"
-    r"|\d+(?:\.\d+)?\s+(?:on|f1))",
+    r"(\b\d+(?:\.\d+)?\s*%"
+    r"|\b\d+(?:\.\d+)?\s*(?:percent|points?|pts|tokens?/s|ms|bleu|rouge|"
+    r"accuracy|acc|f1|mmlu|score|perplexity|ppl)\b"
+    r"|\b(?:score|accuracy|acc|f1|mmlu|ppl|perplexity|coverage)\b[^.]{0,20}?\b\d+(?:\.\d+)?"
+    r"|\b\d+(?:\.\d+)?\s+(?:on|f1)\b)",
     re.I,
 )
 # Users and model outputs commonly spell the name as "Lambda" rather than using
