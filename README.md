@@ -1,27 +1,5 @@
 [![PyPI](https://img.shields.io/pypi/v/szl-nemo)](https://pypi.org/project/szl-nemo/) [![Python](https://img.shields.io/pypi/pyversions/szl-nemo)](https://pypi.org/project/szl-nemo/) [![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/szl-holdings/szl-nemo/badge)](https://scorecard.dev/viewer/?uri=github.com/szl-holdings/szl-nemo) [![CI](https://github.com/szl-holdings/szl-nemo/actions/workflows/cpu-contract.yml/badge.svg)](https://github.com/szl-holdings/szl-nemo/actions/workflows/cpu-contract.yml) [![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue)](LICENSE)
 
-## Quickstart
-
-```bash
-pip install szl-nemo
-szl-nemo --help   # deterministic doctrine checker (R1-R5) + proof-carrying witness
-```
-
----
-
----
-license: apache-2.0
-tags:
-  - governance
-  - inference-witness
-  - deterministic
-  - evidence-grounding
-  - receipts
-  - recipe-conformance
-  - szl-holdings
-  - doctrine-v11
----
-
 # szl-nemo — deterministic witness, not Nemotron
 
 Canonical GitHub source: [`szl-holdings/szl-nemo`](https://github.com/szl-holdings/szl-nemo).
@@ -30,6 +8,13 @@ Canonical GitHub source: [`szl-holdings/szl-nemo`](https://github.com/szl-holdin
 inference-envelope witness. It is **not** NVIDIA Nemotron, an LLM, a generative
 model, an Ollama model, or a Triton/CUDA kernel. SZL has not fine-tuned Nemotron
 and does not republish NVIDIA weights.
+
+## Quickstart
+
+```bash
+pip install szl-nemo
+szl-nemo --help   # deterministic doctrine checker (R1-R5) + proof-carrying witness
+```
 
 Approved package paths:
 
