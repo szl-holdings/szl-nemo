@@ -26,6 +26,7 @@ from .envelope import (
     ENVELOPE_SCHEMA_VERSION,
     evaluate_envelope,
 )
+from .triad import evaluate_triad, strict_json_loads
 from .receipt import RECEIPT_SCHEMA, verify_chain, verify_receipt
 from .schema import ALLOW, BLOCK, REVIEW, RULE_VERSION, SCHEMA_VERSION
 
@@ -101,6 +102,20 @@ def _cmd_envelope_check(args: argparse.Namespace) -> int:
         print(f"error: cannot evaluate {path}: {exc}", file=sys.stderr)
         return EXIT_ERROR
     _print_decision(decision, sys.stdout)
+    return _decision_exit(decision)
+
+
+def _cmd_triad_check(args: argparse.Namespace) -> int:
+    path = Path(args.path)
+    try:
+        document = strict_json_loads(path.read_text(encoding="utf-8"))
+        if not isinstance(document, dict):
+            raise TypeError("top-level JSON value must be an object")
+        decision = evaluate_triad(document)
+    except (OSError, json.JSONDecodeError, TypeError, ValueError) as exc:
+        print(f"error: cannot evaluate {path}: {exc}", file=sys.stderr)
+        return EXIT_ERROR
+    sys.stdout.write(decision.body_json + "\n")
     return _decision_exit(decision)
 
 
@@ -215,6 +230,16 @@ def build_parser() -> argparse.ArgumentParser:
     )
     rv.add_argument("path", help="path to receipt JSON file")
     rv.set_defaults(func=_cmd_receipt_verify)
+
+    triad = sub.add_parser(
+        "triad-check",
+        help=(
+            "bind an authorized request hash, a proposal-only model digest, "
+            "NVML joules or null, and a non-authorizing Lambda score"
+        ),
+    )
+    triad.add_argument("path", help="path to triad JSON")
+    triad.set_defaults(func=_cmd_triad_check)
 
     version = sub.add_parser("version", help="print version and contract info")
     version.set_defaults(func=_cmd_version)
