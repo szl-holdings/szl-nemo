@@ -3,7 +3,8 @@
 
 Approved paths:
 - prompt/answer R1-R5 rule_check + typed Decision engine;
-- structured E1-E10 inference-envelope witness.
+- structured E1-E10 inference-envelope witness;
+- unsigned triad binder for a proposal, NVML joules or null, and Lambda.
 
 This is SOFTWARE, not a Kernel Hub CUDA kernel, not an LLM, and not Nemotron.
 ``model.joblib`` remains quarantined and is not an approved load path.
@@ -23,6 +24,11 @@ from .envelope import (
 from .receipt import build_receipt, chain, verify_chain, verify_receipt
 from .rules import RULE_IDS, rule_check
 from .schema import ALLOW, BLOCK, REVIEW, Decision
+from .triad import (
+    LAMBDA_STATUS_LABEL,
+    TRIAD_SCHEMA,
+    evaluate_triad,
+)
 
 __version__ = "0.4.2"
 __all__ = [
@@ -34,8 +40,10 @@ __all__ = [
     "ENVELOPE_RULE_VERSION",
     "ENVELOPE_SCHEMA_VERSION",
     "LOCKED_PROVEN_FORMULA_IDS",
+    "LAMBDA_STATUS_LABEL",
     "RULE_IDS",
     "STAGES",
+    "TRIAD_SCHEMA",
     "TRUTH_LABELS",
     "build_receipt",
     "chain",
@@ -44,6 +52,7 @@ __all__ = [
     "evaluate",
     "evaluate_batch",
     "evaluate_envelope",
+    "evaluate_triad",
     "input_hash",
     "rule_check",
     "verify_chain",

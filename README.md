@@ -158,15 +158,46 @@ assert text_decision.input_hash.startswith("sha256:")
 assert envelope_decision.input_hash.startswith("sha256:")
 ```
 
+## Triad binder
+
+`szl_nemo.evaluate_triad` binds four facts the other SZL surfaces already
+state separately. It does not merge them into a new theorem.
+
+1. The caller is authorized and the request is a SHA-256 digest. The raw
+   request is not stored.
+2. An NVIDIA Nemotron reply, or any other model reply, stays
+   `PROPOSAL_ONLY`. This package does not load or republish those weights.
+3. Energy is a finite non-negative NVML joule value labeled `MEASURED`, or
+   `null` labeled `UNAVAILABLE`. A missing meter is not a fabricated number.
+4. Λ is the weighted geometric mean of scores in `[0, 1]`. One zero axis
+   forces 0. The score is `MODELED`. Unconditional uniqueness under A1–A5
+   is Conjecture 1 and is machine-checked false as stated
+   (`maxAgg_ne_Lambda` in `szl-holdings/lutar-lean`). Theorem U is
+   conditional. The score cannot authorize.
+5. The record's DSSE field is `null` and `receipt_status` is
+   `UNSIGNED_HONEST`. This repository holds no signing key.
+
+`ALLOW` means the document has that shape. It is not tool authority, not a
+proof of computation, and not a DARPA award. Public program names ANSR,
+ARCOS, and CLARA are references only.
+
+```bash
+szl-nemo triad-check triad.json
+```
+
 ## Status
 
 | Surface | Label | Evidence and limitations |
 |---|---|---|
 | R1–R5 doctrine checker, typed decisions, CLI, and receipts | **MEASURED — operational** | CI, labelled vectors, deterministic decision tests, installed-wheel self-test, and receipt-chain verification. Regex ground truth is deliberately conservative and may false-block negated phrasing. |
+| Triad binder `szl.nemo.triad.v1` | **MEASURED — local contract tests only** | 14 unit tests on this tree. No live NVML call, no signature, and no deployment. |
 | E1–E10 structured inference-envelope witness | **MEASURED — operational contract** | Adversarial tests cover formula-set drift, invented formula mappings, formula applicability, tenant denial, evidence tampering, mutable revisions, Nemo/Nemotron confusion, private-state leakage, model self-execution, unsigned tool calls, stage order, postconditions, and truth-label drift. This validates envelopes; it does not prove a model is high quality or that a live deployment executed. |
 | Historical TF-IDF/logistic-regression triage scorer | **QUARANTINED / not an approved path** | `TRAINING_RECEIPT.json` reports N=5,620 checker-labelled rows and a 12-example paraphrase set. `model.joblib` is absent from the approved package path, so the historical scorer is not loadable or replayable from published bytes. |
 | Nemotron or generative-model evaluation | **UNAVAILABLE** | No Nemotron weights or qualified Nemotron benchmark are published here. |
 | NVIDIA weights | **NOT REPUBLISHED** | Upstream weights, when independently fetched, remain governed by their upstream license. |
 
-Apache-2.0 applies to SZL-authored files in this repository. Lambda uniqueness
-remains Conjecture 1; never describe it as proven.
+Apache-2.0 applies to SZL-authored files in this repository. Unconditional
+Lambda uniqueness under bare A1–A5 remains Conjecture 1 and is
+machine-checked false as stated (`maxAgg_ne_Lambda`). Theorem U is
+conditional. Never describe Lambda as proven, and never use it as
+authorization.
