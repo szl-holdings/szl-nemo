@@ -2,6 +2,8 @@
 """Triad binder: proposal, joules or null, and a non-authorizing Λ score."""
 from __future__ import annotations
 
+import contextlib
+import io
 import json
 import math
 import tempfile
@@ -100,6 +102,49 @@ class TriadTests(unittest.TestCase):
             "source": "NVML",
         }
         self.assertEqual(evaluate_triad(document).decision, "BLOCK")
+
+    def test_integer_conversion_overflow_blocks_without_a_numeric_claim(self) -> None:
+        for value in (10**400, -(10**400)):
+            for field in ("energy", "scores", "weights"):
+                with self.subTest(value_sign=value > 0, field=field):
+                    document = _document()
+                    if field == "energy":
+                        document["energy"] = {"joules": value, "label": "MEASURED", "source": "NVML"}
+                    else:
+                        document["lambda"][field] = [value, 1.0]
+                    decision = evaluate_triad(document)
+                    record = decision.record()
+                    self.assertEqual(decision.decision, "BLOCK")
+                    if field == "energy":
+                        self.assertIsNone(record["energy"]["joules"])
+                        self.assertEqual(record["energy"]["label"], "UNAVAILABLE")
+                    else:
+                        self.assertIsNone(record["lambda"]["score"])
+                        self.assertEqual(record["lambda"]["score_label"], "UNAVAILABLE")
+
+    def test_finite_weights_whose_sum_overflows_block(self) -> None:
+        document = _document()
+        document["lambda"]["weights"] = [1e308, 1e308]
+        decision = evaluate_triad(document)
+        self.assertEqual(decision.decision, "BLOCK")
+        self.assertIn("lambda weights must sum to 1", decision.reasons)
+        self.assertIsNone(decision.record()["lambda"]["score"])
+
+    def test_cli_numeric_overflow_emits_a_block_record(self) -> None:
+        for field in ("energy", "weights"):
+            with self.subTest(field=field), tempfile.TemporaryDirectory() as tmp:
+                document = _document()
+                if field == "energy":
+                    document["energy"] = {"joules": 10**400, "label": "MEASURED", "source": "NVML"}
+                else:
+                    document["lambda"]["weights"] = [1e308, 1e308]
+                path = Path(tmp) / "triad.json"
+                path.write_text(json.dumps(document), encoding="utf-8")
+                output = io.StringIO()
+                with contextlib.redirect_stdout(output):
+                    result = main(["triad-check", str(path)])
+                self.assertEqual(result, 1)
+                self.assertEqual(json.loads(output.getvalue())["decision"], "BLOCK")
 
     def test_execution_authority_blocks(self) -> None:
         document = _document()

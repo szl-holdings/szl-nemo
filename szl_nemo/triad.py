@@ -200,7 +200,11 @@ def _revision(value: Any) -> Optional[str]:
 def _real(value: Any) -> Optional[float]:
     if isinstance(value, bool) or not isinstance(value, (int, float)):
         return None
-    number = float(value)
+    try:
+        number = float(value)
+    except OverflowError:
+        # JSON integers can exceed the finite float range used by this record.
+        return None
     if not math.isfinite(number):
         return None
     return number
@@ -389,7 +393,12 @@ def _check_lambda(lambda_doc: Mapping[str, Any]) -> Tuple[Optional[float], List[
                 reasons.append("each lambda weight must be finite and positive")
                 return None, reasons
             weights.append(number)
-        if abs(math.fsum(weights) - 1.0) > _WEIGHT_SUM_TOLERANCE:
+        try:
+            normalized = abs(math.fsum(weights) - 1.0) <= _WEIGHT_SUM_TOLERANCE
+        except OverflowError:
+            # Individually finite positive weights can still overflow their sum.
+            normalized = False
+        if not normalized:
             reasons.append("lambda weights must sum to 1")
             return None, reasons
     return geometric_mean(scores, weights), reasons
