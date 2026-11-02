@@ -190,7 +190,7 @@ szl-nemo triad-check triad.json
 | Surface | Label | Evidence and limitations |
 |---|---|---|
 | R1–R5 doctrine checker, typed decisions, CLI, and receipts | **MEASURED — operational** | CI, labelled vectors, deterministic decision tests, installed-wheel self-test, and receipt-chain verification. Regex ground truth is deliberately conservative and may false-block negated phrasing. |
-| Triad binder `szl.nemo.triad.v1` | **MEASURED — local contract tests only** | 14 unit tests on this tree. No live NVML call, no signature, and no deployment. |
+| Triad binder `szl.nemo.triad.v1` | **MEASURED — local contract tests only** | 19 unit tests on this tree, including malformed-metadata redaction through the API and CLI. No live NVML call, no signature, and no deployment. |
 | E1–E10 structured inference-envelope witness | **MEASURED — operational contract** | Adversarial tests cover formula-set drift, invented formula mappings, formula applicability, tenant denial, evidence tampering, mutable revisions, Nemo/Nemotron confusion, private-state leakage, model self-execution, unsigned tool calls, stage order, postconditions, and truth-label drift. This validates envelopes; it does not prove a model is high quality or that a live deployment executed. |
 | Historical TF-IDF/logistic-regression triage scorer | **QUARANTINED / not an approved path** | `TRAINING_RECEIPT.json` reports N=5,620 checker-labelled rows and a 12-example paraphrase set. `model.joblib` is absent from the approved package path, so the historical scorer is not loadable or replayable from published bytes. |
 | Nemotron or generative-model evaluation | **UNAVAILABLE** | No Nemotron weights or qualified Nemotron benchmark are published here. |
