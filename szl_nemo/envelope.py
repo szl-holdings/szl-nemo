@@ -142,7 +142,9 @@ def _mapping(value: Any) -> Mapping[str, Any]:
 def _sequence(value: Any) -> Sequence[Any]:
     if isinstance(value, Sequence) and not isinstance(value, (str, bytes, bytearray)):
         return value
-    return ()
+    # A malformed supplied container is not evidence of an empty collection.
+    # envelope_check converts this structural failure into its rule violation.
+    raise ValueError("envelope collection must be an array")
 
 
 def _walk_keys(value: Any) -> Iterable[str]:
@@ -299,6 +301,10 @@ def _tool_parts(
 
 def _rule_e7(envelope: Mapping[str, Any]) -> bool:
     stage = envelope.get("stage")
+    if any(envelope.get(key) is not None
+           and not isinstance(envelope.get(key), Mapping)
+           for key in ("tool_intent", "action_admission", "receipt")):
+        return False
     tool, admission, receipt = _tool_parts(envelope)
     if stage in ("PRE_GENERATION", "POST_GENERATION"):
         return not tool and not admission
@@ -337,6 +343,10 @@ def _rule_e8(envelope: Mapping[str, Any]) -> bool:
 
 def _rule_e9(envelope: Mapping[str, Any]) -> bool:
     stage = envelope.get("stage")
+    if any(envelope.get(key) is not None
+           and not isinstance(envelope.get(key), Mapping)
+           for key in ("postcondition", "tool_result")):
+        return False
     postcondition = _mapping(envelope.get("postcondition"))
     result = _mapping(envelope.get("tool_result"))
     if stage != "POST_TOOL":
