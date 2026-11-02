@@ -8,6 +8,7 @@ import json
 import math
 import tempfile
 import unittest
+from contextlib import redirect_stderr, redirect_stdout
 from pathlib import Path
 
 from szl_nemo.cli import main
@@ -157,6 +158,40 @@ class TriadTests(unittest.TestCase):
         document = _document()
         document["dsse"] = {"signature": "not-checked"}
         self.assertEqual(evaluate_triad(document).decision, "BLOCK")
+
+    def test_malformed_metadata_cannot_echo_private_content(self) -> None:
+        for section, field in (
+            ("authorization", "access_decision"),
+            ("proposal", "family"),
+            ("proposal", "authority"),
+            ("proposal", "model_id"),
+            ("energy", "source"),
+        ):
+            with self.subTest(section=section, field=field):
+                document = _document()
+                document[section][field] = {"raw_prompt": "SYNTHETIC_PRIVATE_MARKER" * 2000}
+                decision = evaluate_triad(document)
+                self.assertEqual(decision.decision, "BLOCK")
+                self.assertFalse("SYNTHETIC_PRIVATE_MARKER" in decision.body_json)
+                self.assertFalse("raw_prompt" in decision.body_json)
+                self.assertIsNone(decision.record()[section][field])
+                self.assertLess(len(decision.body_json.encode("utf-8")), 4096)
+
+    def test_cli_malformed_model_id_emits_redacted_block(self) -> None:
+        document = _document()
+        document["proposal"]["model_id"] = {"raw_prompt": "SYNTHETIC_PRIVATE_MARKER"}
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "triad.json"
+            path.write_text(json.dumps(document), encoding="utf-8")
+            stdout, stderr = io.StringIO(), io.StringIO()
+            with redirect_stdout(stdout), redirect_stderr(stderr):
+                exit_code = main(["triad-check", str(path)])
+            self.assertEqual(exit_code, 1)
+            record = strict_json_loads(stdout.getvalue())
+            self.assertEqual(record["decision"], "BLOCK")
+            self.assertIsNone(record["proposal"]["model_id"])
+            self.assertNotIn("SYNTHETIC_PRIVATE_MARKER", stdout.getvalue())
+            self.assertEqual(stderr.getvalue(), "")
 
     def test_proven_flag_blocks(self) -> None:
         document = _document()

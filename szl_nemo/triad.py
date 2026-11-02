@@ -197,6 +197,18 @@ def _revision(value: Any) -> Optional[str]:
     return None
 
 
+def _enum_value(value: Any, allowed: Iterable[str]) -> Optional[str]:
+    return value if isinstance(value, str) and value in allowed else None
+
+
+def _model_id(value: Any) -> Optional[str]:
+    if not isinstance(value, str) or not value.strip() or any(
+        char in value for char in "\r\n"
+    ):
+        return None
+    return value
+
+
 def _real(value: Any) -> Optional[float]:
     if isinstance(value, bool) or not isinstance(value, (int, float)):
         return None
@@ -253,6 +265,8 @@ def evaluate_triad(document: Mapping[str, Any]) -> TriadDecision:
     reasons.extend(lambda_reasons)
 
     decision = BLOCK if reasons else ALLOW
+    # Rejected metadata can contain forbidden raw content. Project only
+    # validated scalar values, including when emitting a BLOCK record.
     body = {
         "schema": TRIAD_SCHEMA,
         "witness_identity": {
@@ -264,15 +278,15 @@ def evaluate_triad(document: Mapping[str, Any]) -> TriadDecision:
         "authorization": {
             "principal_id_sha256": _hex64(authorization.get("principal_id_sha256")),
             "tenant_id_sha256": _hex64(authorization.get("tenant_id_sha256")),
-            "access_decision": authorization.get("access_decision"),
+            "access_decision": _enum_value(authorization.get("access_decision"), ("ALLOW",)),
             "policy_revision": _revision(authorization.get("policy_revision")),
             "request_sha256": _hex64(authorization.get("request_sha256")),
         },
         "proposal": {
-            "family": proposal.get("family"),
-            "authority": proposal.get("authority"),
+            "family": _enum_value(proposal.get("family"), _FAMILIES),
+            "authority": _enum_value(proposal.get("authority"), ("PROPOSAL_ONLY",)),
             "output_sha256": _hex64(proposal.get("output_sha256")),
-            "model_id": proposal.get("model_id"),
+            "model_id": _model_id(proposal.get("model_id")),
             "model_revision": _revision(proposal.get("model_revision")),
         },
         "energy": energy_out,
@@ -326,16 +340,13 @@ def _check_proposal(proposal: Mapping[str, Any]) -> List[str]:
     unknown = _unknown_keys(proposal, _PROPOSAL_KEYS)
     if unknown:
         reasons.append("unknown proposal fields: " + ",".join(unknown))
-    if proposal.get("family") not in _FAMILIES:
+    if _enum_value(proposal.get("family"), _FAMILIES) is None:
         reasons.append("proposal family is not NVIDIA_NEMOTRON or OTHER")
     if proposal.get("authority") != "PROPOSAL_ONLY":
         reasons.append("model authority is not PROPOSAL_ONLY")
     if _hex64(proposal.get("output_sha256")) is None:
         reasons.append("proposal output_sha256 is not 64 hex characters")
-    model_id = proposal.get("model_id")
-    if not isinstance(model_id, str) or not model_id.strip() or any(
-        char in model_id for char in "\r\n"
-    ):
+    if _model_id(proposal.get("model_id")) is None:
         reasons.append("model_id is missing")
     if _revision(proposal.get("model_revision")) is None:
         reasons.append("model_revision is not a pinned revision")
@@ -349,17 +360,18 @@ def _check_energy(energy: Mapping[str, Any]) -> Tuple[dict, List[str]]:
         reasons.append("unknown energy fields: " + ",".join(unknown))
     label = energy.get("label")
     source = energy.get("source")
+    output_source = _enum_value(source, ("NVML", "NVML_ABSENT"))
     joules = energy.get("joules")
     if label == "MEASURED" and source == "NVML":
         number = _real(joules)
         if number is None or number < 0.0:
             reasons.append("MEASURED energy needs a finite non-negative joule value")
-            return {"joules": None, "label": "UNAVAILABLE", "source": source}, reasons
+            return {"joules": None, "label": "UNAVAILABLE", "source": output_source}, reasons
         return {"joules": number, "label": "MEASURED", "source": "NVML"}, reasons
     if label == "UNAVAILABLE" and source == "NVML_ABSENT" and joules is None:
         return {"joules": None, "label": "UNAVAILABLE", "source": "NVML_ABSENT"}, reasons
     reasons.append("energy must be NVML joules or an honest null")
-    return {"joules": None, "label": "UNAVAILABLE", "source": source}, reasons
+    return {"joules": None, "label": "UNAVAILABLE", "source": output_source}, reasons
 
 
 def _check_lambda(lambda_doc: Mapping[str, Any]) -> Tuple[Optional[float], List[str]]:
