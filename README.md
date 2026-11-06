@@ -201,3 +201,5 @@ Lambda uniqueness under bare A1–A5 remains Conjecture 1 and is
 machine-checked false as stated (`maxAgg_ne_Lambda`). Theorem U is
 conditional. Never describe Lambda as proven, and never use it as
 authorization.
+
+Estate on Hugging Face: models, datasets and Spaces are published under the [SZLHOLDINGS](https://huggingface.co/SZLHOLDINGS) org.
