@@ -125,11 +125,13 @@ def envelope_input_hash(envelope: Mapping[str, Any]) -> str:
 
 
 def _is_hex64(value: Any) -> bool:
-    return bool(HEX64.fullmatch(str(value or "").lower()))
+    return isinstance(value, str) and bool(HEX64.fullmatch(value.lower()))
 
 
 def _is_pinned(value: Any, *, allow_none: bool = False) -> bool:
-    token = str(value or "").strip().lower()
+    if not isinstance(value, str):
+        return False
+    token = value.strip().lower()
     if allow_none and token == "none":
         return True
     return bool(REVISION.fullmatch(token))
@@ -215,7 +217,7 @@ def _rule_e3(envelope: Mapping[str, Any]) -> bool:
             return False
         node_id = str(raw.get("node_id") or "")
         source = str(raw.get("source") or "")
-        digest = str(raw.get("sha256") or "").lower()
+        digest = raw.get("sha256")
         if not node_id or not source or not _is_hex64(digest):
             return False
         item_ids.append(node_id)
@@ -225,8 +227,8 @@ def _rule_e3(envelope: Mapping[str, Any]) -> bool:
         return False
     if handle_ids != item_ids:
         return False
-    declared = str(evidence.get("evidence_set_sha256") or "").lower()
-    return declared == canonical_sha256(items)
+    declared = evidence.get("evidence_set_sha256")
+    return _is_hex64(declared) and declared.lower() == canonical_sha256(items)
 
 
 def _rule_e4(envelope: Mapping[str, Any]) -> bool:
