@@ -166,3 +166,46 @@ def test_cli_receipt_verify_roundtrip():
             cwd=ROOT, capture_output=True, text=True,
         )
         assert proc.returncode == 1
+
+
+def test_unsigned_receipt_rejects_unhashed_authority_extensions():
+    """Unhashed signature/approval metadata must not ride on a valid digest."""
+    original = build_receipt(evaluate(*ALLOW_PAIR))
+    assert verify_receipt(original) is True
+    for field, claim in (
+        ("signature_status", "SIGNED_VERIFIED"),
+        ("human_approval", "APPROVED"),
+        ("execution_authority", "A11OY"),
+    ):
+        injected = copy.deepcopy(original)
+        injected[field] = claim
+        assert verify_receipt(injected) is False, field
+
+    nested = copy.deepcopy(original)
+    nested["decision"]["signature_status"] = "SIGNED_VERIFIED"
+    assert verify_receipt(nested) is False
+
+
+def test_receipt_cli_refuses_duplicate_keys_before_interpretation():
+    """An overwritten earlier rejection must not become a valid receipt."""
+    original = build_receipt(evaluate(*ALLOW_PAIR))
+    encoded = json.dumps(original, sort_keys=True)
+    marker = '"receipt_status": "UNSIGNED_HONEST"'
+    assert marker in encoded
+    duplicate = encoded.replace(
+        marker,
+        '"receipt_status": "SIGNED_VERIFIED", ' + marker,
+        1,
+    )
+    # Python's permissive json.loads previously discarded the first claim.
+    assert json.loads(duplicate) == original
+    with tempfile.TemporaryDirectory() as tmp:
+        path = os.path.join(tmp, "duplicate.json")
+        with open(path, "w", encoding="utf-8") as fh:
+            fh.write(duplicate)
+        proc = subprocess.run(
+            [sys.executable, "-m", "szl_nemo", "receipt-verify", path],
+            cwd=ROOT, capture_output=True, text=True,
+        )
+        assert proc.returncode == 2
+        assert "duplicate key" in proc.stderr

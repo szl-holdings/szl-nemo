@@ -39,6 +39,15 @@ except Exception:  # pragma: no cover - fallback to the local implementation
 RECEIPT_SCHEMA = "szl.nemo.receipt.v1"
 GENESIS = "sha256:" + "0" * 64
 _HEX = frozenset("0123456789abcdef")
+# An unsigned receipt cannot carry unbound approval or signature metadata.
+_RECEIPT_FIELDS = frozenset({
+    "schema", "sequence", "prev_receipt_sha256", "decision",
+    "receipt_sha256", "receipt_status",
+})
+_DECISION_FIELDS = frozenset({
+    "schema_version", "decision", "violated_rules", "reasons",
+    "rule_version", "input_hash", "receipt_status",
+})
 
 
 def _sha256_canonical(payload: Dict[str, Any]) -> str:
@@ -94,7 +103,7 @@ def build_receipt(
 def verify_receipt(receipt: Any) -> bool:
     """Recompute the digest and check chain shape. Never raises."""
     try:
-        if not isinstance(receipt, dict):
+        if not isinstance(receipt, dict) or set(receipt) != _RECEIPT_FIELDS:
             return False
         if receipt.get("schema") != RECEIPT_SCHEMA:
             return False
@@ -111,7 +120,14 @@ def verify_receipt(receipt: Any) -> bool:
             return False
         if (sequence == 0) != (prev_link == GENESIS):
             return False
-        decision = Decision.from_dict(receipt["decision"])
+        raw_decision = receipt.get("decision")
+        if not isinstance(raw_decision, dict) or set(raw_decision) != _DECISION_FIELDS:
+            return False
+        decision = Decision.from_dict(raw_decision)
+        # from_dict may fill defaults or coerce tuples. The source object itself
+        # must be exactly the bytes represented by the canonical decision.
+        if decision.to_dict() != raw_decision:
+            return False
         payload = {
             "schema": RECEIPT_SCHEMA,
             "sequence": sequence,
