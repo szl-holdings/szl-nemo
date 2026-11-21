@@ -155,8 +155,8 @@ def _cmd_receipt_verify(args: argparse.Namespace) -> int:
     """Verify one receipt object or a JSON array forming a chain."""
     path = Path(args.path)
     try:
-        data = json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError) as exc:
+        data = strict_json_loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError, ValueError) as exc:
         print(f"error: cannot read {path}: {exc}", file=sys.stderr)
         return EXIT_ERROR
     if isinstance(data, list):
